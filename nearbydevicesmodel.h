@@ -25,7 +25,7 @@ public slots:
 	QString hwAddress(int index) { return devicepathlist[index]; }
 	QString alias(int index){ return deviceAliasMap[devicepathlist[index]]; }
 	void pair(QString hwaddy);
-	void discover();
+	void discover(bool start);
 	void removeAll(bool);
 
 	void replyRequestConfirmation(bool confirmed);

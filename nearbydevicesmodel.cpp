@@ -1,5 +1,5 @@
 #include "nearbydevicesmodel.h"
-#include "bluetoothagent.h"
+#include "bluetoothbaseagent.h"
 
 NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 	QAbstractListModel(parent), adapter(NULL), agent(NULL)
@@ -11,6 +11,11 @@ NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 	connect(manager,SIGNAL(AdapterAdded(QDBusObjectPath)),this,SLOT(adapterAdded(QDBusObjectPath)));
 	connect(manager,SIGNAL(AdapterRemoved(QDBusObjectPath)),this,SLOT(adapterRemoved(QDBusObjectPath)));
 	adapterAdded(QDBusObjectPath());
+
+	QHash<int,QByteArray> roles;
+	roles[Qt::DisplayRole]="name";
+
+	setRoleNames(roles);
 }
 
 
@@ -58,9 +63,11 @@ void NearbyDevicesModel::pair(QString hwaddy)
 	//qDebug()<<"new object created: "<<object.path();
 }
 
-void NearbyDevicesModel::discover()
+void NearbyDevicesModel::discover(bool start)
 {
-	adapter->StartDiscovery();
+	if(start)
+		adapter->StartDiscovery();
+	else adapter->StopDiscovery();
 }
 
 void NearbyDevicesModel::removeAll(bool)
@@ -100,8 +107,8 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 
 	if(!found)
 	{
-		beginInsertRows(QModelIndex(), 0, devicepathlist.size());
 		devicepathlist.append(hwaddy);
+		beginInsertRows(QModelIndex(), devicepathlist.size(), devicepathlist.size());
 		deviceAliasMap[hwaddy] = properties["Alias"].toString();
 		emit nearbyDeviceFound(devicepathlist.indexOf(hwaddy));
 		endInsertRows();
@@ -113,10 +120,10 @@ void NearbyDevicesModel::deviceRemoved(QString hwaddy)
 	int i=-1;
 	if((i = devicepathlist.indexOf(hwaddy)) >=0)
 	{
-		beginRemoveRows(QModelIndex(),i,i+1);
+		beginRemoveRows(QModelIndex(),i,i);
 		devicepathlist.removeAt(i);
 		emit nearbyDeviceRemoved(i);
-		endInsertRows();
+		endRemoveRows();
 	}
 
 }

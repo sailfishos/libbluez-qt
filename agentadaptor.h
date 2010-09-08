@@ -15,7 +15,7 @@
 #define AGENTADAPTOR_H
 
 #include <QDBusAbstractAdaptor>
-#include "bluetoothagent.h"
+#include "bluetoothbaseagent.h"
 
 class AgentAdaptor : public QDBusAbstractAdaptor
 {
