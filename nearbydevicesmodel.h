@@ -1,0 +1,57 @@
+#ifndef NEARBYDEVICESMODEL_H
+#define NEARBYDEVICESMODEL_H
+
+#include <QObject>
+#include <QAbstractListModel>
+#include <QDBusObjectPath>
+
+#include "bluemanager.h"
+#include "blueadapter.h"
+#include "asyncagent.h"
+
+class NearbyDevicesModel : public QAbstractListModel
+{
+	Q_OBJECT
+
+public:
+	NearbyDevicesModel(QObject *parent = 0);
+
+public slots:
+
+	int columnCount(const QModelIndex &) const { return 1;}
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	QVariant data(const QModelIndex &index, int role) const;
+
+	QString hwAddress(int index) { return devicepathlist[index]; }
+	QString alias(int index){ return deviceAliasMap[devicepathlist[index]]; }
+	void pair(QString hwaddy);
+	void discover();
+	void removeAll(bool);
+
+	void replyRequestConfirmation(bool confirmed);
+	void replyPasskey(uint passkey);
+	void replyRequestPidCode(QString pidCode);
+
+private slots:
+	void adapterAdded(QDBusObjectPath);
+	void adapterRemoved(QDBusObjectPath);
+	void deviceCreated(QString hwaddy, QVariantMap properties);
+	void deviceRemoved(QString hwaddy);
+
+signals:
+	void requestConfirmation(QString device, uint code);
+	void requestPasskey(QString device);
+	void requestPidCode(QString device);
+
+	void nearbyDeviceFound(int index);
+	void nearbyDeviceRemoved(int index);
+
+private:
+	QList<QString> devicepathlist;
+	QMap<QString,QString> deviceAliasMap;
+	OrgBluezManagerInterface *manager;
+	OrgBluezAdapterInterface *adapter;
+	AsyncAgent* agent;
+};
+
+#endif // NEARBYDEVICESMODEL_H
