@@ -29,7 +29,9 @@ HEADERS += agentadaptor.h \
 	nearbydevicesmodel.h \
 	bluetoothbaseagent.h \
 	asyncagent.h \
-	devicetypes.h
+	devicetypes.h \
+    bluetoothdevice.h \
+    bluetoothdevicemodel.h
 SOURCES += agentadaptor.cpp \
 	bluemanager.cpp \
 	bluedevice.cpp \
@@ -39,7 +41,9 @@ SOURCES += agentadaptor.cpp \
 	headset.cpp \
 	nearbydevicesmodel.cpp \
 	bluetoothbaseagent.cpp \
-	asyncagent.cpp
+	asyncagent.cpp \
+    bluetoothdevice.cpp \
+    bluetoothdevicemodel.cpp
 
 target.path = $$INSTALL_ROOT/usr/lib
 headers.path = $$INSTALL_ROOT/usr/include/bluetooth-qt/

@@ -42,22 +42,12 @@ QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 
 void NearbyDevicesModel::pair(QString hwaddy)
 {
-	qDebug("attempting to pair...");
-	OrgBluezManagerInterface manager(
-			"org.bluez",
-			"/", QDBusConnection::systemBus());
 
-	QDBusObjectPath adapterpath = manager.DefaultAdapter();
-
-	OrgBluezAdapterInterface adapter(
-			"org.bluez",
-			adapterpath.path(),
-			QDBusConnection::systemBus());
-
+	qDebug()<<"attempting to pair with "<<hwaddy;
+	if(!adapter) return;
 	agent = new AsyncAgent("/temp/agent",this);
 
-	//QDBusPendingCall response =
-	adapter.CreatePairedDevice(hwaddy,
+	adapter->CreatePairedDevice(hwaddy,
 				   QDBusObjectPath("/temp/agent"),"");
 
 	//qDebug()<<"new object created: "<<object.path();
@@ -107,8 +97,8 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 
 	if(!found)
 	{
+		beginInsertRows(QModelIndex(), devicepathlist.size()+1, devicepathlist.size()+1);
 		devicepathlist.append(hwaddy);
-		beginInsertRows(QModelIndex(), devicepathlist.size(), devicepathlist.size());
 		deviceAliasMap[hwaddy] = properties["Alias"].toString();
 		emit nearbyDeviceFound(devicepathlist.indexOf(hwaddy));
 		endInsertRows();
