@@ -1,6 +1,6 @@
 #include "bluetoothdevicemodel.h"
 
-BluetoothDeviceModel::BluetoothDeviceModel(QObject *parent) :
+BluetoothDevicesModel::BluetoothDevicesModel(QObject *parent) :
 	QAbstractListModel(parent), adapter(NULL)
 {
 	manager = new OrgBluezManagerInterface(
@@ -19,12 +19,12 @@ BluetoothDeviceModel::BluetoothDeviceModel(QObject *parent) :
 	setRoleNames(roles);
 }
 
-int BluetoothDeviceModel::rowCount(const QModelIndex &parent) const
+int BluetoothDevicesModel::rowCount(const QModelIndex &) const
 {
 	return m_devices.size();
 }
 
-QVariant BluetoothDeviceModel::data(const QModelIndex &index, int role) const
+QVariant BluetoothDevicesModel::data(const QModelIndex &index, int role) const
 {
 	if(role == name)
 	{
@@ -56,7 +56,26 @@ QVariant BluetoothDeviceModel::data(const QModelIndex &index, int role) const
 	return QVariant();
 }
 
-void BluetoothDeviceModel::adapterAdded(QDBusObjectPath path)
+QString BluetoothDevicesModel::devicePath(QString devicename)
+{
+	foreach(BluetoothDevice* device, m_devices)
+	{
+		if(device->name() == devicename)
+			return device->path();
+	}
+	return "";
+}
+
+BluetoothDevice* BluetoothDevicesModel::device(QString path)
+{
+	foreach(BluetoothDevice* device, m_devices)
+	{
+		if(device->path() == path)
+			return device;
+	}
+}
+
+void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
 {
 	if(adapter && adapter->path() == path.path()) return;
 
@@ -73,12 +92,12 @@ void BluetoothDeviceModel::adapterAdded(QDBusObjectPath path)
 	connect(adapter,
 		SIGNAL(DeviceRemoved(QDBusObjectPath)),
 		this,
-		SIGNAL(deviceRemoved(QDBusObjectPath)));
+		SLOT(deviceRemoved(QDBusObjectPath)));
 
 	connect(adapter,
 		SIGNAL(DeviceCreated(QDBusObjectPath)),
 		this,
-		SIGNAL(deviceCreated(QDBusObjectPath)));
+		SLOT(deviceCreated(QDBusObjectPath)));
 
 	QList<QDBusObjectPath> list = adapter->ListDevices();
 	foreach(QDBusObjectPath item, list)
@@ -87,7 +106,7 @@ void BluetoothDeviceModel::adapterAdded(QDBusObjectPath path)
 	}
 }
 
-void BluetoothDeviceModel::adapterRemoved(QDBusObjectPath)
+void BluetoothDevicesModel::adapterRemoved(QDBusObjectPath)
 {
 	QDBusObjectPath adapterpath = manager->DefaultAdapter();
 
@@ -106,7 +125,7 @@ void BluetoothDeviceModel::adapterRemoved(QDBusObjectPath)
 	}
 }
 
-void BluetoothDeviceModel::deviceCreated(QDBusObjectPath devicepath)
+void BluetoothDevicesModel::deviceCreated(QDBusObjectPath devicepath)
 {
 
 	beginInsertRows(QModelIndex(),m_devices.size()+1,m_devices.size()+1);
@@ -114,7 +133,7 @@ void BluetoothDeviceModel::deviceCreated(QDBusObjectPath devicepath)
 	endInsertRows();
 }
 
-void BluetoothDeviceModel::deviceRemoved(QDBusObjectPath devicepath)
+void BluetoothDevicesModel::deviceRemoved(QDBusObjectPath devicepath)
 {
 	for(int i=0; i<m_devices.size(); i++)
 	{

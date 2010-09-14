@@ -6,11 +6,11 @@
 #include "blueadapter.h"
 #include "bluetoothdevice.h"
 
-class BluetoothDeviceModel : public QAbstractListModel
+class BluetoothDevicesModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    explicit BluetoothDeviceModel(QObject *parent = 0);
+	explicit BluetoothDevicesModel(QObject *parent = 0);
 
 	enum Role
 	{
@@ -25,12 +25,19 @@ public slots:
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
 	QVariant data(const QModelIndex &index, int role) const;
 
+	QString devicePath(QString name);
+
+	QList<BluetoothDevice*> devices(){ return m_devices; }
+
+	BluetoothDevice* device(QString path);
+
+private slots:
 	void adapterAdded(QDBusObjectPath);
 	void adapterRemoved(QDBusObjectPath);
 	void deviceCreated(QDBusObjectPath);
 	void deviceRemoved(QDBusObjectPath);
 
-	QList<BluetoothDevice*> devices(){ return m_devices; }
+
 
 private:
 	OrgBluezManagerInterface *manager;

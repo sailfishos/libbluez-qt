@@ -21,7 +21,7 @@ class BluetoothDevice : public QObject
 	Q_PROPERTY(QString connectedProfile READ connectedProfile)*/
 
 public:
-	explicit BluetoothDevice(QDBusObjectPath path, QObject *parent = 0);
+	explicit BluetoothDevice(QDBusObjectPath path = QDBusObjectPath(), QObject *parent = 0);
 
 signals:
 	void connetedChanged();

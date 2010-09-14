@@ -8,6 +8,7 @@ AsyncAgent::AsyncAgent(QString path, QObject *parent) :
 
 void AsyncAgent::requestConfirmation(OrgBluezDeviceInterface &device, uint key)
 {
+	qDebug("requestConfirmation");
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
@@ -40,6 +41,7 @@ uint AsyncAgent::requestPasskey(OrgBluezDeviceInterface &device)
 
 QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 {
+	qDebug("requestPidCode");
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();

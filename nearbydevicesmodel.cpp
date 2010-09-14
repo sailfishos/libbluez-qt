@@ -13,8 +13,8 @@ NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 	adapterAdded(QDBusObjectPath());
 
 	QHash<int,QByteArray> roles;
-	roles[Qt::DisplayRole]="name";
-
+	roles[NearbyDevicesModelRoles::name]="name";
+	roles[NearbyDevicesModelRoles::address]="address";
 	setRoleNames(roles);
 }
 
@@ -27,7 +27,7 @@ int NearbyDevicesModel::rowCount(const QModelIndex &parent) const
 
 QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 {
-	if (role == Qt::DisplayRole)
+	if (role == NearbyDevicesModelRoles::name)
 	{
 		QString rowData;
 		if(index.row() < devicepathlist.size())
@@ -36,7 +36,15 @@ QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 		}
 		return QVariant(rowData);
 	}
-
+	else if (role == NearbyDevicesModelRoles::address)
+	{
+		QString rowData;
+		if(index.row() < devicepathlist.size())
+		{
+			rowData = devicepathlist[index.row()];
+		}
+		return QVariant(rowData);
+	}
 	return QVariant();
 }
 

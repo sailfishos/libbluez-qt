@@ -9,6 +9,15 @@
 #include "blueadapter.h"
 #include "asyncagent.h"
 
+namespace NearbyDevicesModelRoles
+{
+	enum
+	{
+		name = Qt::UserRole + 1,
+		address
+	};
+}
+
 class NearbyDevicesModel : public QAbstractListModel
 {
 	Q_OBJECT
