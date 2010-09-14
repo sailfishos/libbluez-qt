@@ -6,12 +6,14 @@
 !exists(headset.h):system(qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
 include(obex/obex.pri)
 
+VERSION+= 0.0.1
+
 TEMPLATE = lib
 TARGET = bluetooth-qt
 QT += dbus
 CONFIG += link_pkgconfig \
 	debug
-OTHER_FILES += McpBluetooth.conf \
+OTHER_FILES += bluetooth-qt.conf \
 	manager.xml \
 	device.xml \
 	audiosrc.xml \
@@ -58,3 +60,8 @@ pkgconfig.path = $$INSTALL_ROOT/usr/lib/pkgconfig
 pkgconfig.files = bluetooth-qt.pc
 
 INSTALLS += pkgconfig
+
+dbusfiles.path = $$INSTALL_ROOT/etc/dbus-1/system.d
+dbusfiles.files = bluetooth-qt.conf
+
+INSTALLS += dbusfiles
