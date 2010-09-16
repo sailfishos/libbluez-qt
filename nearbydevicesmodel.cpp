@@ -74,6 +74,8 @@ void NearbyDevicesModel::pair(QString hwaddy)
 
 void NearbyDevicesModel::discover(bool start)
 {
+	if(!adapter) return;
+
 	if(start)
 		adapter->StartDiscovery();
 	else adapter->StopDiscovery();
@@ -168,7 +170,7 @@ void NearbyDevicesModel::adapterRemoved(QDBusObjectPath)
 	if(adapterpath.path() == "")
 	{
 		removeAll(true);
-		if(adapter) delete adapter;
+		if(adapter){ delete adapter; adapter = NULL; }
 		return;
 	}
 }
