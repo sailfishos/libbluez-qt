@@ -41,11 +41,15 @@ public slots:
 	void replyPasskey(uint passkey);
 	void replyRequestPidCode(QString pidCode);
 
+	void setAdapterProperty(QString name, QVariant value);
+
 private slots:
 	void adapterAdded(QDBusObjectPath);
 	void adapterRemoved(QDBusObjectPath);
 	void deviceCreated(QString hwaddy, QVariantMap properties);
 	void deviceRemoved(QString hwaddy);
+
+	void adapterPropertiesChangedSlot(QString n,QDBusVariant v);
 
 signals:
 	void requestConfirmation(QString device, uint code);
@@ -54,6 +58,8 @@ signals:
 
 	void nearbyDeviceFound(int index);
 	void nearbyDeviceRemoved(int index);
+
+	void adapterPropertiesChanged(QString name, QVariant value);
 
 private:
 	QList<QString> devicepathlist;

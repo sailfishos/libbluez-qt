@@ -104,6 +104,11 @@ void NearbyDevicesModel::replyRequestPidCode(QString pidCode)
 	if(agent) agent->replyRequestPidCode(pidCode);
 }
 
+void NearbyDevicesModel::setAdapterProperty(QString name, QVariant value)
+{
+	if(adapter) adapter->setProperty(name.toAscii().data(),value);
+}
+
 void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 {
 	bool found = false;
@@ -161,6 +166,10 @@ void NearbyDevicesModel::adapterAdded(QDBusObjectPath path)
 		SIGNAL(DeviceDisappeared(QString)),
 		this,
 		SLOT(deviceRemoved(QString)));
+	connect(adapter,
+			SIGNAL(PropertyChanged(QString,QDBusVariant)),
+			this,
+			SLOT(adapterPropertiesChangedSlot(QString,QDBusVariant)));
 }
 
 void NearbyDevicesModel::adapterRemoved(QDBusObjectPath)
@@ -173,4 +182,9 @@ void NearbyDevicesModel::adapterRemoved(QDBusObjectPath)
 		if(adapter){ delete adapter; adapter = NULL; }
 		return;
 	}
+}
+
+void NearbyDevicesModel::adapterPropertiesChangedSlot(QString n,QDBusVariant v)
+{
+	adapterPropertiesChanged(n,v.variant());
 }
