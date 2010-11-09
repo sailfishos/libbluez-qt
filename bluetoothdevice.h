@@ -25,6 +25,7 @@ public:
 
 signals:
 	void connetedChanged();
+	void propertyChanged(QString name, QVariant value);
 
 public slots:
 	void unpair();
@@ -33,7 +34,6 @@ public slots:
 
 	QStringList profiles();
 	bool isProfileSupported(QString profile);
-	QString connectedProfile();
 
 	///properties:
 	bool connected();

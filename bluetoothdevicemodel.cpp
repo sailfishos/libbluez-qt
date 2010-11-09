@@ -84,6 +84,7 @@ BluetoothDevice* BluetoothDevicesModel::device(QString path)
 		if(device->path() == path)
 			return device;
 	}
+	return NULL;
 }
 
 void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
@@ -113,7 +114,7 @@ void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
 	QList<QDBusObjectPath> list = adapter->ListDevices();
 	foreach(QDBusObjectPath item, list)
 	{
-		m_devices.append(new BluetoothDevice(item));
+		deviceCreated(item);
 	}
 }
 
@@ -138,9 +139,12 @@ void BluetoothDevicesModel::adapterRemoved(QDBusObjectPath)
 
 void BluetoothDevicesModel::deviceCreated(QDBusObjectPath devicepath)
 {
+	BluetoothDevice* device = new BluetoothDevice(devicepath,this);
+
+	connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
 
 	beginInsertRows(QModelIndex(),m_devices.size()+1,m_devices.size()+1);
-	m_devices.append(new BluetoothDevice(devicepath));
+	m_devices.append(device);
 	endInsertRows();
 }
 
@@ -152,9 +156,19 @@ void BluetoothDevicesModel::deviceRemoved(QDBusObjectPath devicepath)
 		if(m_devices[i]->path() == devicepath.path())
 		{
 			beginRemoveRows(QModelIndex(), i, i);
-			delete m_devices[i];
+			m_devices[i]->deleteLater();
 			m_devices.removeAt(i);
 			endRemoveRows();
 		}
+	}
+}
+
+void BluetoothDevicesModel::devicePropertyChanged(QString name, QVariant value)
+{
+	if(name == "Paired" && value.toBool() == true)
+	{
+		qDebug()<<"device property changed: "<<name<<" "<<value;
+		BluetoothDevice* device = qobject_cast<BluetoothDevice*>(sender());
+		emit devicePaired(device);
 	}
 }

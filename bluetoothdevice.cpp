@@ -100,41 +100,6 @@ bool BluetoothDevice::connected()
 	return props["Connected"].toBool();
 }
 
-QString BluetoothDevice::connectedProfile()
-{
-	foreach(QString profile, profiles())
-	{
-		if(profile == BluetoothProfiles::a2sink)
-		{
-			OrgBluezAudioSinkInterface sink("org.bluez",m_device->path(),
-											QDBusConnection::systemBus());
-			if(sink.IsConnected())
-				return BluetoothProfiles::a2sink;
-		}
-		else if(profile == BluetoothProfiles::a2src)
-		{
-			OrgBluezAudioSourceInterface source("org.bluez",m_device->path(),
-											QDBusConnection::systemBus());
-			QVariantMap props = source.GetProperties();
-
-			if(props["State"].toString() == "connected")
-			{
-				return BluetoothProfiles::a2src;
-			}
-
-		}
-		else if(profile == BluetoothProfiles::hs)
-		{
-			OrgBluezHeadsetInterface headset("org.bluez",m_device->path(),
-											QDBusConnection::systemBus());
-			if(headset.IsConnected())
-			{
-				return BluetoothProfiles::hs;
-			}
-		}
-	}
-}
-
 QString BluetoothDevice::alias()
 {
 	QVariantMap props = m_device->GetProperties();
@@ -166,6 +131,8 @@ QString BluetoothDevice::path()
 
 void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 {
+	emit propertyChanged(name,value.variant());
+
 	if(name == "Connected")
 	{
 		emit connetedChanged();

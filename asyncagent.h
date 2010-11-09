@@ -23,6 +23,7 @@ public:
 	void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
 	uint requestPasskey(OrgBluezDeviceInterface &device);
 	QString requestPidCode(OrgBluezDeviceInterface &device);
+	void release();
 
 signals:
 

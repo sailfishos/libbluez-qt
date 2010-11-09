@@ -66,15 +66,25 @@ QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 	return "";
 }
 
+void AsyncAgent::release()
+{
+	qDebug("releasing!");
+	if (!QMetaObject::invokeMethod(parent(), "release", Qt::QueuedConnection))
+		qDebug("sending relay signal failed!!!");
+}
+
 
 void AsyncAgent::replyRequestConfirmation(bool confirmed)
 {
 	if(!confirmed)
 	{
-		reject();
+		qDebug("rejecting");
+		QDBusMessage reply = pendingMessage.createErrorReply("org.bluez.Error.Rejected", "The request was rejected");
+		m_connection.send(reply);
 	}
 	else
 	{
+		qDebug("accepting");
 		QDBusMessage reply = pendingMessage.createReply();
 		m_connection.send(reply);
 	}

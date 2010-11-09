@@ -34,10 +34,6 @@ public slots:
 	virtual uint requestPasskey(OrgBluezDeviceInterface &device);
 	virtual QString requestPidCode(OrgBluezDeviceInterface &device);
 
-	virtual void reject() { sendErrorReply("org.bluez.Error.Rejected", "The request was rejected"); }
-
-	virtual void accept();
-	virtual void doReject();
 private:
 	bool requestAccepted;
 };

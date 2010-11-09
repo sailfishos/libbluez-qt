@@ -37,7 +37,10 @@ private slots:
 	void deviceCreated(QDBusObjectPath);
 	void deviceRemoved(QDBusObjectPath);
 
+	void devicePropertyChanged(QString name, QVariant value);
 
+signals:
+	void devicePaired(BluetoothDevice*);
 
 private:
 	OrgBluezManagerInterface *manager;

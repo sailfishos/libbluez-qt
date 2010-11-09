@@ -64,7 +64,7 @@ void NearbyDevicesModel::pair(QString hwaddy)
 
 	qDebug()<<"attempting to pair with "<<hwaddy;
 	if(!adapter) return;
-	agent = new AsyncAgent("/temp/agent",this);
+	agent = new AsyncAgent("/temp/agent", this);
 
 	adapter->CreatePairedDevice(hwaddy,
 				   QDBusObjectPath("/temp/agent"),"");
@@ -91,6 +91,7 @@ void NearbyDevicesModel::removeAll(bool)
 
 void NearbyDevicesModel::replyRequestConfirmation(bool confirmed)
 {
+	qDebug()<<"reply to RequestConfirmation:"<<confirmed;
 	if(agent) agent->replyRequestConfirmation(confirmed);
 }
 

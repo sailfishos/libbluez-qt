@@ -55,6 +55,7 @@ signals:
 	void requestConfirmation(QString device, uint code);
 	void requestPasskey(QString device);
 	void requestPidCode(QString device);
+	void release();
 
 	void nearbyDeviceFound(int index);
 	void nearbyDeviceRemoved(int index);

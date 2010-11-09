@@ -82,17 +82,3 @@ QString BluetoothBaseAgent::requestPidCode(OrgBluezDeviceInterface &device)
 	return "";
 }
 
-void BluetoothBaseAgent::accept()
-{
-	requestAccepted = true;
-}
-
-void BluetoothBaseAgent::doReject()
-{
-	if(requestAccepted)
-	{
-		requestAccepted=false;
-		return;
-	}
-	reject();
-}
