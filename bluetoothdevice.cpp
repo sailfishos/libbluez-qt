@@ -135,6 +135,7 @@ void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 
 	if(name == "Connected")
 	{
-		emit connetedChanged();
+		emit connectedChanged();
 	}
+	///TODO: create individual signals for each property
 }
