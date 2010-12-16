@@ -37,6 +37,8 @@ int BluetoothDevicesModel::rowCount(const QModelIndex &) const
 
 QVariant BluetoothDevicesModel::data(const QModelIndex &index, int role) const
 {
+	if(index.row() < 0) return QVariant(); ///this is retarded but it has to be done.
+
 	if(role == name)
 	{
 		QString rowData;
