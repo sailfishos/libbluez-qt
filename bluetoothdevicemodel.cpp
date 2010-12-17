@@ -37,7 +37,13 @@ int BluetoothDevicesModel::rowCount(const QModelIndex &) const
 
 QVariant BluetoothDevicesModel::data(const QModelIndex &index, int role) const
 {
-	if(index.row() < 0) return QVariant(); ///this is retarded but it has to be done.
+	qDebug()<<"requested role: "<<roleNames()[role];
+
+	if(!index.isValid() || index.row() < 0)
+	{
+		qDebug()<<"index is not valid: "<<index.row()<<","<<index.column();
+		return QVariant(); ///this is retarded but it has to be done.
+	}
 
 	if(role == name)
 	{
@@ -145,7 +151,7 @@ void BluetoothDevicesModel::deviceCreated(QDBusObjectPath devicepath)
 
 	connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
 
-	beginInsertRows(QModelIndex(),m_devices.size()+1,m_devices.size()+1);
+	beginInsertRows(QModelIndex(),m_devices.size(),m_devices.size());
 	m_devices.append(device);
 	endInsertRows();
 }
@@ -167,10 +173,17 @@ void BluetoothDevicesModel::deviceRemoved(QDBusObjectPath devicepath)
 
 void BluetoothDevicesModel::devicePropertyChanged(QString name, QVariant value)
 {
+	BluetoothDevice* device = qobject_cast<BluetoothDevice*>(sender());
+
+	qDebug()<<"device property changed for "<<device->address()<<": "<<name<<" "<<value;
+
 	if(name == "Paired" && value.toBool() == true)
 	{
-		qDebug()<<"device property changed: "<<name<<" "<<value;
-		BluetoothDevice* device = qobject_cast<BluetoothDevice*>(sender());
 		emit devicePaired(device);
 	}
+
+	int row = m_devices.indexOf(device);
+	if(row == -1) return; ///device doesn't exist.
+
+	dataChanged(createIndex(row, 0),createIndex(row, 0));
 }

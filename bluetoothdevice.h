@@ -13,12 +13,12 @@ class BluetoothDevice : public QObject
 {
     Q_OBJECT	
 	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged);
-	/*Q_PROPERTY(QStringList profiles READ profiles)
+	Q_PROPERTY(QStringList profiles READ profiles)
 	Q_PROPERTY(QString alias READ alias)
 	Q_PROPERTY(QString name READ name)
 	Q_PROPERTY(QString address READ address)
 	Q_PROPERTY(QString icon READ icon)
-	Q_PROPERTY(QString path READ path)*/
+	Q_PROPERTY(QString path READ path)
 
 public:
 	explicit BluetoothDevice(QDBusObjectPath path = QDBusObjectPath(), QObject *parent = 0);

@@ -40,7 +40,7 @@ private slots:
 	void devicePropertyChanged(QString name, QVariant value);
 
 signals:
-	void devicePaired(BluetoothDevice*);
+	void devicePaired(BluetoothDevice* device);
 
 private:
 	OrgBluezManagerInterface *manager;
