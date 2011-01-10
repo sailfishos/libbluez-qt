@@ -4,15 +4,14 @@
 #include <QObject>
 #include <QStringList>
 #include <bluedevice.h>
-/*
-#include <audiosource.h>
-#include <audiosink.h>
-#include <headset.h>
-*/
+
+class OrgBluezAudioInterface;
+
 class BluetoothDevice : public QObject
 {
     Q_OBJECT	
 	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged);
+	Q_PROPERTY(bool audioConnected READ audioConnected NOTIFY audioConnectedChanged)
 	Q_PROPERTY(QStringList profiles READ profiles)
 	Q_PROPERTY(QString alias READ alias)
 	Q_PROPERTY(QString name READ name)
@@ -24,12 +23,15 @@ public:
 	explicit BluetoothDevice(QDBusObjectPath path = QDBusObjectPath(), QObject *parent = 0);
 
 signals:
-	void connectedChanged();
+	void connectedChanged(bool isConnected);
+	void audioConnectedChanged(bool isConnected);
 	void propertyChanged(QString name, QVariant value);
 
 public slots:
 	void unpair();
-	void connect(QString profile);
+	void connectAudio();
+	void connectAudioSrc();
+	QString connectSerial();
 	void disconnect();
 
 	QStringList profiles();
@@ -37,6 +39,7 @@ public slots:
 
 	///properties:
 	bool connected();
+	bool audioConnected();
 	QString alias();
 	QString name();
 	QString address();
@@ -45,9 +48,11 @@ public slots:
 
 private slots:
 	void propertyChanged(QString name,QDBusVariant value);
+	void audioPropertiesChanged(QString name, QDBusVariant value);
 
 private:
 	OrgBluezDeviceInterface *m_device;
+	OrgBluezAudioInterface *audio;
 };
 
 #endif // BLUETOOTHDEVICE_H

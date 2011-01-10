@@ -16,9 +16,10 @@
 #include "audiosink.h"
 #include "audiosource.h"
 #include "headset.h"
+#include "audio.h"
 
 BluetoothDevice::BluetoothDevice(QDBusObjectPath path, QObject *parent) :
-		QObject(parent),m_device(new OrgBluezDeviceInterface("org.bluez",path.path(),QDBusConnection::systemBus(),this))
+		QObject(parent),m_device(new OrgBluezDeviceInterface("org.bluez",path.path(),QDBusConnection::systemBus(),this)),audio(NULL)
 {
 	if(!m_device->isValid())
 		return;
@@ -44,31 +45,40 @@ void BluetoothDevice::unpair()
 	adapter.RemoveDevice(QDBusObjectPath(m_device->path()));
 }
 
-void BluetoothDevice::connect(QString profile)
+void BluetoothDevice::connectAudio()
 {
-	if(profile == BluetoothProfiles::a2sink)
+	if(isProfileSupported(BluetoothProfiles::a2sink) || isProfileSupported(BluetoothProfiles::hs))
 	{
-		OrgBluezAudioSinkInterface sink("org.bluez",m_device->path(),
-										QDBusConnection::systemBus());
-		sink.Connect();
+		if(!audio) audio = new OrgBluezAudioInterface("org.bluez", m_device->path(), QDBusConnection::systemBus(), this);
+
+		audio->Connect();
+
+		connect(audio,SIGNAL(PropertyChanged(QString,QDBusVariant)),this,SLOT(audioPropertiesChanged(QString,QDBusVariant)));
 	}
-	else if(profile == BluetoothProfiles::a2src)
+}
+void BluetoothDevice::connectAudioSrc()
+{
+
+	if(isProfileSupported(BluetoothProfiles::a2src))
 	{
 		OrgBluezAudioSourceInterface source("org.bluez",m_device->path(),
 										QDBusConnection::systemBus());
 		source.Connect();
 	}
-	else if(profile == BluetoothProfiles::hs)
-	{
-		OrgBluezHeadsetInterface headset("org.bluez",m_device->path(),
-										QDBusConnection::systemBus());
-		headset.Connect();
-	}
-	else if(profile == BluetoothProfiles::spp)
+}
+
+QString BluetoothDevice::connectSerial()
+{
+	if(isProfileSupported(BluetoothProfiles::spp))
 	{
 		QDBusInterface interface("org.bluez",m_device->path(),"org.bluez.Serial",QDBusConnection::systemBus());
-		interface.call(QDBus::AutoDetect, "Connect","spp");
+		QDBusReply<QString> reply = interface.call(QDBus::AutoDetect, "Connect","spp");
+
+		if(reply.isValid()) return reply;
+		else qDebug()<<"Error connecting spp profile: "<<reply.error().message();
 	}
+
+	return "";
 }
 
 void BluetoothDevice::disconnect()
@@ -98,6 +108,18 @@ bool BluetoothDevice::connected()
 {
 	QVariantMap props = m_device->GetProperties();
 	return props["Connected"].toBool();
+}
+
+bool BluetoothDevice::audioConnected()
+{
+	if(!audio)
+	{
+		audio = new OrgBluezAudioInterface("org.bluez",m_device->path(), QDBusConnection::systemBus(),this);
+		connect(audio,SIGNAL(PropertyChanged(QString,QDBusVariant)),this,SLOT(audioPropertiesChanged(QString,QDBusVariant)));
+	}
+
+	QVariantMap props = audio->GetProperties();
+	return props["State"].toString() == "connected";
 }
 
 QString BluetoothDevice::alias()
@@ -135,7 +157,17 @@ void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 
 	if(name == "Connected")
 	{
-		emit connectedChanged();
+		emit connectedChanged(value.variant().toBool());
 	}
 	///TODO: create individual signals for each property
+}
+
+void BluetoothDevice::audioPropertiesChanged(QString name,QDBusVariant value)
+{
+	emit propertyChanged(name, value.variant());
+
+	if(name == "State")
+	{
+		emit audioConnectedChanged(value.variant().toString() == "connected");
+	}
 }
