@@ -92,7 +92,24 @@ BluetoothDevice* BluetoothDevicesModel::device(QString path)
 		if(device->path() == path)
 			return device;
 	}
+	qDebug()<<"Device not found for path: "<<path;
 	return NULL;
+}
+
+void BluetoothDevicesModel::makeDiscoverable(bool discoverableValue)
+{
+	if(adapter) adapter->SetProperty("Discoverable", QDBusVariant(discoverableValue));
+}
+
+bool BluetoothDevicesModel::discoverable()
+{
+	if(adapter)
+	{
+		QVariantMap props = adapter->GetProperties();
+		return props["Discoverable"].toBool();
+	}
+
+	return false;
 }
 
 void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
@@ -108,6 +125,11 @@ void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
 			"org.bluez",
 			adapterpath.path(),
 			QDBusConnection::systemBus(), this);
+
+	connect(adapter,
+			SIGNAL(PropertyChanged(QString,QDBusVariant)),
+			this,
+			SLOT(adapterPropertyChanged(QString,QDBusVariant)));
 
 	connect(adapter,
 		SIGNAL(DeviceRemoved(QDBusObjectPath)),
@@ -186,4 +208,15 @@ void BluetoothDevicesModel::devicePropertyChanged(QString name, QVariant value)
 	if(row == -1) return; ///device doesn't exist.
 
 	dataChanged(createIndex(row, 0),createIndex(row, 0));
+}
+
+
+void BluetoothDevicesModel::adapterPropertyChanged(QString name, QDBusVariant value)
+{
+	qDebug()<<"adapter property changed: "<<name<<" "<<value.variant();
+
+	if(name == "Discoverable")
+	{
+		discoverableChanged(value.variant().toBool());
+	}
 }

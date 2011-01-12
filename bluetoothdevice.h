@@ -33,6 +33,7 @@ public slots:
 	void connectAudioSrc();
 	QString connectSerial();
 	void disconnect();
+	void disconnectAudio();
 
 	QStringList profiles();
 	bool isProfileSupported(QString profile);

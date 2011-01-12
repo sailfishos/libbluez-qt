@@ -86,6 +86,13 @@ void BluetoothDevice::disconnect()
 	m_device->Disconnect();
 }
 
+void BluetoothDevice::disconnectAudio()
+{
+	if(!audio) audio = new OrgBluezAudioInterface("org.bluez", m_device->path(), QDBusConnection::systemBus(), this);
+
+	audio->Disconnect();
+}
+
 QStringList BluetoothDevice::profiles()
 {
 	QVariantMap props = m_device->GetProperties();

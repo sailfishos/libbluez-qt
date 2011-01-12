@@ -27,6 +27,7 @@ namespace BluetoothProfiles
 	const char opush[] = "00001105-0000-1000-8000-00805f9b34fb";
 	const char ftp[] = "00001106-0000-1000-8000-00805f9b34fb";
 	const char panu[] = "00001115-0000-1000-8000-00805f9b34fb";
+	const char nap[] = "00001116-0000-1000-8000-00805f9b34fb";
 	const char spp[] = "00001101-0000-1000-8000-00805f9b34fb";
 }
 #endif // BTPROFILES_H
