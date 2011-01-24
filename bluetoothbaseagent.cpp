@@ -32,7 +32,7 @@ BluetoothBaseAgent::BluetoothBaseAgent(QString path, QObject *parent):QObject(pa
 			adapterpath.path(),
 			QDBusConnection::systemBus());
 
-	adapter.RegisterAgent(QDBusObjectPath("/pairing/agent"),"");
+	adapter.RegisterAgent(QDBusObjectPath(path),"");
 
 	qDebug()<<"last error: "<<adapter.lastError().message();
 

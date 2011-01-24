@@ -119,7 +119,10 @@ void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
 	QDBusObjectPath adapterpath = manager->DefaultAdapter();
 
 	if(adapterpath.path() == "")
+	{
+		///we actually shouldn't ever get here.
 		return;
+	}
 
 	adapter = new OrgBluezAdapterInterface(
 			"org.bluez",
@@ -141,6 +144,8 @@ void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
 		this,
 		SLOT(deviceCreated(QDBusObjectPath)));
 
+	adapterChanged(true);
+
 	QList<QDBusObjectPath> list = adapter->ListDevices();
 	foreach(QDBusObjectPath item, list)
 	{
@@ -157,12 +162,15 @@ void BluetoothDevicesModel::adapterRemoved(QDBusObjectPath)
 		beginRemoveRows(QModelIndex(), 0, m_devices.size()-1);
 		foreach(BluetoothDevice* device, m_devices)
 		{
+
 			delete device;
 		}
 		m_devices.clear();
 		endRemoveRows();
 
 		if(adapter) delete adapter;
+		adapter = NULL;
+		adapterChanged(false);
 		return;
 	}
 }
