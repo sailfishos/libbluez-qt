@@ -16,26 +16,27 @@
 #include "blueadapter.h"
 #include <QTimer>
 
-BluetoothBaseAgent::BluetoothBaseAgent(QString path, QObject *parent):QObject(parent),requestAccepted(false)
+BluetoothBaseAgent::BluetoothBaseAgent(QString path, QObject *parent):QObject(parent),requestAccepted(false),m_path(path)
 {
 	new AgentAdaptor(this);
 	QDBusConnection::systemBus().registerObject(path,this);
+}
 
-	OrgBluezManagerInterface manager(
-			"org.bluez",
-			"/", QDBusConnection::systemBus());
+void BluetoothBaseAgent::registerAgent()
+{
+    OrgBluezManagerInterface manager(
+                    "org.bluez",
+                    "/", QDBusConnection::systemBus());
 
-	QDBusObjectPath adapterpath = manager.DefaultAdapter();
+    QDBusObjectPath adapterpath = manager.DefaultAdapter();
 
-	OrgBluezAdapterInterface adapter(
-			"org.bluez",
-			adapterpath.path(),
-			QDBusConnection::systemBus());
+    OrgBluezAdapterInterface adapter(
+                    "org.bluez",
+                    adapterpath.path(),
+                    QDBusConnection::systemBus());
 
-	adapter.RegisterAgent(QDBusObjectPath(path),"");
-
-	qDebug()<<"last error: "<<adapter.lastError().message();
-
+    adapter.RegisterAgent(QDBusObjectPath(m_path),"");
+    qDebug()<<"last error: "<<adapter.lastError().message();
 }
 
 void BluetoothBaseAgent::authorize(OrgBluezDeviceInterface &device, QString uuid)
@@ -50,9 +51,13 @@ void BluetoothBaseAgent::confirmModeChange(QString mode)
 	qDebug()<<"mode changed "<<mode;
 }
 
-void BluetoothBaseAgent::displayPasskey(OrgBluezDeviceInterface &device, uint key)
+void BluetoothBaseAgent::displayPasskey(OrgBluezDeviceInterface &device, uint key, uint entered)
 {
 	qDebug()<<"display key "<<device.path()<<" "<<key;
+
+	///create and return back an empty reply:
+	QDBusMessage reply = message().createReply();
+	connection().send(reply);
 }
 
 void BluetoothBaseAgent::release()

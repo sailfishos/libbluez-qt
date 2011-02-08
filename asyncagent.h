@@ -13,12 +13,15 @@
 #define ASYNCAGENT_H
 
 #include "bluetoothbaseagent.h"
+#include "bluetoothdevice.h"
 
 class AsyncAgent : public BluetoothBaseAgent
 {
     Q_OBJECT
 public:
 	explicit AsyncAgent(QString path, QObject *parent = 0);
+
+	BluetoothDevice* device() { return deviceToPair; }
 
 	void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
 	uint requestPasskey(OrgBluezDeviceInterface &device);
@@ -35,6 +38,8 @@ public slots:
 private:
 	QDBusMessage pendingMessage;
 	QDBusConnection m_connection;
+
+	BluetoothDevice* deviceToPair;
 
 };
 

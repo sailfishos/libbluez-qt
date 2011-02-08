@@ -31,7 +31,7 @@ public slots:
 	void Authorize(const QDBusObjectPath &device, const QString &uuid);
 	void Cancel();
 	void ConfirmModeChange(const QString &mode);
-	void DisplayPasskey(const QDBusObjectPath &device, uint passkey);
+	void DisplayPasskey(const QDBusObjectPath &device, uint passkey, uint entered);
 	void Release();
 	void RequestConfirmation(const QDBusObjectPath &device, uint passkey);
 	uint RequestPasskey(const QDBusObjectPath &device);
