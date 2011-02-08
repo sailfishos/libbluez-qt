@@ -54,7 +54,7 @@ void AgentAdaptor::ConfirmModeChange(const QString &mode)
 	agent->confirmModeChange(mode);
 }
 
-void AgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint passkey)
+void AgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint passkey, uint entered)
 {
 	if(!agent)
 	{
@@ -63,7 +63,7 @@ void AgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint pass
 
 	OrgBluezDeviceInterface device("org.bluez", deviceObject.path(), QDBusConnection::systemBus());
 
-	agent->displayPasskey(device, passkey);
+	agent->displayPasskey(device, passkey, entered);
 }
 
 void AgentAdaptor::Release()

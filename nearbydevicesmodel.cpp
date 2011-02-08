@@ -24,8 +24,11 @@ NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 	adapterAdded(QDBusObjectPath());
 
 	QHash<int,QByteArray> roles;
-	roles[NearbyDevicesModelRoles::name]="name";
-	roles[NearbyDevicesModelRoles::address]="address";
+	QMetaObject properties = NearbyItem::staticMetaObject;
+	for(int i=0; i<properties.propertyCount();i++)
+	{
+		roles[i]=properties.property(i).name();
+	}
 	setRoleNames(roles);
 }
 
@@ -33,29 +36,41 @@ NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 int NearbyDevicesModel::rowCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
-	return devicepathlist.size();
+	return devices.size();
 }
 
 QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 {
-	if (role == NearbyDevicesModelRoles::name)
+	/**if (role == NearbyDevicesModelRoles::name)
 	{
 		QString rowData;
-		if(index.row() < devicepathlist.size())
+		if(index.row() < devices.size())
 		{
-			rowData = deviceAliasMap[devicepathlist[index.row()]];
+			rowData = deviceAliasMap[devices[index.row()]];
 		}
 		return QVariant(rowData);
 	}
 	else if (role == NearbyDevicesModelRoles::address)
 	{
 		QString rowData;
-		if(index.row() < devicepathlist.size())
+		if(index.row() < devices.size())
 		{
-			rowData = devicepathlist[index.row()];
+			rowData = devices[index.row()];
 		}
 		return QVariant(rowData);
+	}*/
+
+	QString roleName = roleNames()[role];
+	QMetaObject object = NearbyItem::staticMetaObject;
+
+	for(int i=0; i<object.propertyCount(); i++)
+	{
+		if(object.property(i).name() == roleName)
+		{
+			return object.property(i).read(devices[index.row()]);
+		}
 	}
+
 	return QVariant();
 }
 
@@ -83,9 +98,9 @@ void NearbyDevicesModel::discover(bool start)
 
 void NearbyDevicesModel::removeAll(bool)
 {
-	for(int i=0;i<devicepathlist.size();i++)
+	for(int i=0;i<devices.size();i++)
 	{
-		devicepathlist.removeAt(i);
+		devices.removeAt(i);
 	}
 }
 
@@ -113,9 +128,9 @@ void NearbyDevicesModel::setAdapterProperty(QString name, QVariant value)
 void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 {
 	bool found = false;
-	foreach(QString path, devicepathlist)
+	foreach(NearbyItem* path, devices)
 	{
-		if(path == hwaddy)
+		if(path->address() == hwaddy)
 		{
 			found=true;
 			break;
@@ -124,25 +139,30 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 
 	if(!found)
 	{
-		beginInsertRows(QModelIndex(), devicepathlist.size()+1, devicepathlist.size()+1);
-		devicepathlist.append(hwaddy);
-		deviceAliasMap[hwaddy] = properties["Alias"].toString();
-		emit nearbyDeviceFound(devicepathlist.indexOf(hwaddy));
+		beginInsertRows(QModelIndex(), devices.size()+1, devices.size()+1);
+
+		NearbyItem* item = new NearbyItem(properties["Alias"].toString(),
+			       hwaddy,properties["Icon"].toString(),this);
+
+		devices.append(item);
+		emit nearbyDeviceFound(devices.indexOf(item));
 		endInsertRows();
 	}
 }
 
 void NearbyDevicesModel::deviceRemoved(QString hwaddy)
 {
-	int i=-1;
-	if((i = devicepathlist.indexOf(hwaddy)) >=0)
+	foreach(NearbyItem* device, devices)
 	{
-		beginRemoveRows(QModelIndex(),i,i);
-		devicepathlist.removeAt(i);
-		emit nearbyDeviceRemoved(i);
-		endRemoveRows();
+		if(device->address() == hwaddy)
+		{
+			int i=devices.indexOf(device);
+			beginRemoveRows(QModelIndex(),i,i);
+			devices.removeAll(device);
+			emit nearbyDeviceRemoved(i);
+			endRemoveRows();
+		}
 	}
-
 }
 
 void NearbyDevicesModel::adapterAdded(QDBusObjectPath path)
