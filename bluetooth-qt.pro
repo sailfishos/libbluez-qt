@@ -1,10 +1,11 @@
-!exists(bluemanager.h):system(qdbusxml2cpp -p bluemanager.h:bluemanager.cpp manager.xml)
-!exists(blueadapter.h):system(qdbusxml2cpp -p blueadapter.h:blueadapter.cpp adapter.xml)
-!exists(bluedevice.h):system(qdbusxml2cpp -p bluedevice.h:bluedevice.cpp -i devicetypes.h device.xml)
-!exists(audio.h):system(qdbusxml2cpp -p audio.h:audio.cpp audio.xml)
-!exists(audiosink.h):system(qdbusxml2cpp -p audiosink.h:audiosink.cpp audiosink.xml)
-!exists(audiosource.h):system(qdbusxml2cpp -p audiosource.h:audiosource.cpp audiosrc.xml)
-!exists(headset.h):system(qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
+system(qdbusxml2cpp -p bluemanager.h:bluemanager.cpp manager.xml)
+system(qdbusxml2cpp -p blueadapter.h:blueadapter.cpp adapter.xml)
+system(qdbusxml2cpp -p bluedevice.h:bluedevice.cpp -i devicetypes.h device.xml)
+system(qdbusxml2cpp -p audio.h:audio.cpp audio.xml)
+system(qdbusxml2cpp -p audiosink.h:audiosink.cpp audiosink.xml)
+system(qdbusxml2cpp -p audiosource.h:audiosource.cpp audiosrc.xml)
+system(qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
+system(qdbusxml2cpp -p input.h:input.cpp input.xml)
 include(obex/obex.pri)
 
 VERSION+= 0.0.4
@@ -20,7 +21,8 @@ OTHER_FILES += bluetooth-qt.conf \
 	audiosrc.xml \
 	audiosink.xml \
 	adapter.xml \
-	headset.xml
+	headset.xml \
+    input.xml
 HEADERS += agentadaptor.h \
 	bluemanager.h \
 	bluedevice.h \
@@ -35,7 +37,8 @@ HEADERS += agentadaptor.h \
 	devicetypes.h \
     bluetoothdevice.h \
 	bluetoothdevicemodel.h \
-	audio.h
+	audio.h \
+	input.h
 SOURCES += agentadaptor.cpp \
 	bluemanager.cpp \
 	bluedevice.cpp \
@@ -46,9 +49,10 @@ SOURCES += agentadaptor.cpp \
 	nearbydevicesmodel.cpp \
 	bluetoothbaseagent.cpp \
 	asyncagent.cpp \
-    bluetoothdevice.cpp \
+	bluetoothdevice.cpp \
 	bluetoothdevicemodel.cpp \
-	audio.cpp
+	audio.cpp \
+	input.cpp
 
 target.path = $$INSTALL_ROOT/usr/lib
 headers.path = $$INSTALL_ROOT/usr/include/bluetooth-qt/
