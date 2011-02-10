@@ -58,17 +58,6 @@ QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 
 			return object.property(i).read(devices[index.row()]);
 		}
-	}*/
-
-	QString roleName = roleNames()[role];
-	QMetaObject object = NearbyItem::staticMetaObject;
-
-	for(int i=0; i<object.propertyCount(); i++)
-	{
-		if(object.property(i).name() == roleName)
-		{
-			return object.property(i).read(devices[index.row()]);
-		}
 	}
 
 	return QVariant();
