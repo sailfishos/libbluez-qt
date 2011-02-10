@@ -41,24 +41,12 @@ int NearbyDevicesModel::rowCount(const QModelIndex &parent) const
 
 QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 {
-	/**if (role == NearbyDevicesModelRoles::name)
+
+	if(!index.isValid() || index.row() < 0)
 	{
-		QString rowData;
-		if(index.row() < devices.size())
-		{
-			rowData = deviceAliasMap[devices[index.row()]];
-		}
-		return QVariant(rowData);
+		qDebug()<<"invalid index"<<index.row();
+		return QVariant();
 	}
-	else if (role == NearbyDevicesModelRoles::address)
-	{
-		QString rowData;
-		if(index.row() < devices.size())
-		{
-			rowData = devices[index.row()];
-		}
-		return QVariant(rowData);
-	}*/
 
 	QString roleName = roleNames()[role];
 	QMetaObject object = NearbyItem::staticMetaObject;
@@ -67,6 +55,7 @@ QVariant NearbyDevicesModel::data(const QModelIndex &index, int role) const
 	{
 		if(object.property(i).name() == roleName)
 		{
+
 			return object.property(i).read(devices[index.row()]);
 		}
 	}
@@ -141,8 +130,8 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 	{
 		beginInsertRows(QModelIndex(), devices.size()+1, devices.size()+1);
 
-		NearbyItem* item = new NearbyItem(properties["Alias"].toString(),
-			       hwaddy,properties["Icon"].toString(),this);
+		NearbyItem* item = new NearbyItem(properties["Name"].toString(),
+			       hwaddy,properties["Icon"].toString(),properties["LegacyPairing"].toBool(),this);
 
 		devices.append(item);
 		emit nearbyDeviceFound(devices.indexOf(item));
@@ -157,8 +146,9 @@ void NearbyDevicesModel::deviceRemoved(QString hwaddy)
 		if(device->address() == hwaddy)
 		{
 			int i=devices.indexOf(device);
+			//if(i == -1) continue;
 			beginRemoveRows(QModelIndex(),i,i);
-			devices.removeAll(device);
+			devices.removeAt(i);
 			emit nearbyDeviceRemoved(i);
 			endRemoveRows();
 		}

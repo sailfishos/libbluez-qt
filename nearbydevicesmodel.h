@@ -26,23 +26,26 @@ class NearbyItem: public QObject
 	Q_PROPERTY(QString name READ name)
 	Q_PROPERTY(QString address READ address)
 	Q_PROPERTY(QString icon READ icon)
+	Q_PROPERTY(bool legacyPairing READ legacyPairing)
 public:
-	NearbyItem(QString name="", QString address="", QString icon="", QObject* parent = 0)
+	NearbyItem(QString name="", QString address="", QString icon="", bool legacy=false, QObject* parent = 0)
 	:QObject(parent)
 	{
 	    m_name=name;
 	    m_addy=address;
 	    m_icon=icon;
+	    m_legacy = legacy;
 	}
 
 	QString name() { return m_name; }
 	QString address() { return m_addy; }
 	QString icon() { return m_icon; }
-
+	bool legacyPairing() { return m_legacy; }
 private:
 	QString m_name;
 	QString m_addy;
 	QString m_icon;
+	bool m_legacy;
 };
 
 class NearbyDevicesModel : public QAbstractListModel
