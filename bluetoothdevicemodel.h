@@ -14,13 +14,6 @@ class BluetoothDevicesModel : public QAbstractListModel
 public:
 	explicit BluetoothDevicesModel(QObject *parent = 0);
 
-	enum Role
-	{
-		name = Qt::UserRole + 1,
-		address,
-		path
-	};
-
 	bool adapterPresent() { return adapter != NULL; }
 
 public slots:

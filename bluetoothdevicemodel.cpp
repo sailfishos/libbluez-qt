@@ -23,9 +23,13 @@ BluetoothDevicesModel::BluetoothDevicesModel(QObject *parent) :
 	adapterAdded(QDBusObjectPath());
 
 	QHash<int, QByteArray> roles;
-	roles[name]="name";
-	roles[address]="address";
-	roles[path]="path";
+
+	QMetaObject properties = BluetoothDevice::staticMetaObject;
+
+	for(int i=0; i<properties.propertyCount();i++)
+	{
+		roles[i]=properties.property(i).name();
+	}
 
 	setRoleNames(roles);
 }
@@ -45,32 +49,16 @@ QVariant BluetoothDevicesModel::data(const QModelIndex &index, int role) const
 		return QVariant(); ///this is retarded but it has to be done.
 	}
 
-	if(role == name)
+	QString roleName = roleNames()[role];
+	QMetaObject object = BluetoothDevice::staticMetaObject;
+
+	for(int i=0; i<object.propertyCount(); i++)
 	{
-		QString rowData;
-		if(index.row() < m_devices.size())
+		if(object.property(i).name() == roleName)
 		{
-			rowData = m_devices[index.row()]->name();
+
+			return object.property(i).read(m_devices[index.row()]);
 		}
-		return QVariant(rowData);
-	}
-	else if(role == address)
-	{
-		QString rowData;
-		if(index.row() < m_devices.size())
-		{
-			rowData = m_devices[index.row()]->address();
-		}
-		return QVariant(rowData);
-	}
-	else if(role == path)
-	{
-		QString rowData;
-		if(index.row() < m_devices.size())
-		{
-			rowData = m_devices[index.row()]->path();
-		}
-		return QVariant(rowData);
 	}
 	return QVariant();
 }

@@ -190,6 +190,8 @@ void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 {
     emit propertyChanged(name,value.variant());
 
+    qDebug()<<"BluetoothDevice::propertyChanged()";
+
     if(name == "Connected")
     {
 	emit connectedChanged(value.variant().toBool());
