@@ -130,7 +130,7 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 	{
 		beginInsertRows(QModelIndex(), devices.size(), devices.size());
 
-		NearbyItem* item = new NearbyItem(properties["Name"].toString(),
+		NearbyItem* item = new NearbyItem(properties["Alias"].toString(),
 			       hwaddy,properties["Icon"].toString(),properties["LegacyPairing"].toBool(),this);
 
 		devices.append(item);
