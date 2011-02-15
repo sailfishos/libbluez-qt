@@ -145,8 +145,8 @@ void NearbyDevicesModel::deviceRemoved(QString hwaddy)
 	{
 		if(device->address() == hwaddy)
 		{
+			qDebug()<<"device "<<device->name()<<" has disappeared";
 			int i=devices.indexOf(device);
-			//if(i == -1) continue;
 			beginRemoveRows(QModelIndex(),i,i);
 			devices.removeAt(i);
 			emit nearbyDeviceRemoved(i);

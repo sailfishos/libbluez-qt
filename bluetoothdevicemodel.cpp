@@ -100,6 +100,26 @@ bool BluetoothDevicesModel::discoverable()
 	return false;
 }
 
+int BluetoothDevicesModel::discoverableTimeout()
+{
+	if(adapter)
+	{
+		QVariantMap props = adapter->GetProperties();
+		return props["DiscoverableTimeout"].toInt();
+	}
+
+	return -1;
+}
+
+void BluetoothDevicesModel::setDiscoverableTimeout(int timeout)
+{
+	if(adapter)
+	{
+		bool success = adapter->setProperty("DiscoverableTimeout", timeout);
+		qDebug()<<"Setting discoverable timeout to "<<timeout<<": "<<success;
+	}
+}
+
 void BluetoothDevicesModel::adapterAdded(QDBusObjectPath path)
 {
 	if(adapter && adapter->path() == path.path()) return;
@@ -214,5 +234,9 @@ void BluetoothDevicesModel::adapterPropertyChanged(QString name, QDBusVariant va
 	if(name == "Discoverable")
 	{
 		discoverableChanged(value.variant().toBool());
+	}
+	else if(name == "DiscoverableTimeout")
+	{
+		discoverableTimeoutChanged(value.variant().toInt());
 	}
 }

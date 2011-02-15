@@ -10,6 +10,7 @@ class BluetoothDevicesModel : public QAbstractListModel
 {
     Q_OBJECT
 	Q_PROPERTY(bool discoverable READ discoverable WRITE makeDiscoverable NOTIFY discoverableChanged);
+	Q_PROPERTY(int discoverableTimeout READ discoverableTimeout WRITE setDiscoverableTimeout NOTIFY discoverableTimeoutChanged)
 	Q_PROPERTY(bool adapterPresent READ adapterPresent NOTIFY adapterChanged)
 public:
 	explicit BluetoothDevicesModel(QObject *parent = 0);
@@ -29,6 +30,8 @@ public slots:
 	BluetoothDevice* device(QString path);
 	void makeDiscoverable(bool isDiscoverable);
 	bool discoverable();
+	int discoverableTimeout();
+	void setDiscoverableTimeout(int timeout);
 
 private slots:
 	void adapterAdded(QDBusObjectPath);
@@ -40,6 +43,7 @@ private slots:
 	void adapterPropertyChanged(QString name, QDBusVariant value);
 
 signals:
+	void discoverableTimeoutChanged(int timeout);
 	void devicePaired(BluetoothDevice* device);
 	void discoverableChanged(bool discoverable);
 	void adapterChanged(bool adapterPresent);

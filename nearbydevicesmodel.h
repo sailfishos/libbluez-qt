@@ -52,7 +52,6 @@ class NearbyDevicesModel : public QAbstractListModel
 {
 	Q_OBJECT
 	Q_PROPERTY(BluetoothDevice* pairingDevice READ pairingDevice)
-
 public:
 	NearbyDevicesModel(QObject *parent = 0);
 
