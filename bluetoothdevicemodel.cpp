@@ -84,6 +84,22 @@ BluetoothDevice* BluetoothDevicesModel::device(QString path)
 	return NULL;
 }
 
+void BluetoothDevicesModel::makePowered(bool poweredValue)
+{
+	if(adapter) adapter->SetProperty("Powered", QDBusVariant(poweredValue));
+}
+
+bool BluetoothDevicesModel::powered()
+{
+	if(adapter)
+	{
+		QVariantMap props = adapter->GetProperties();
+		return props["Powered"].toBool();
+	}
+
+	return false;
+}
+
 void BluetoothDevicesModel::makeDiscoverable(bool discoverableValue)
 {
 	if(adapter) adapter->SetProperty("Discoverable", QDBusVariant(discoverableValue));
@@ -226,12 +242,15 @@ void BluetoothDevicesModel::devicePropertyChanged(QString name, QVariant value)
 	dataChanged(createIndex(row, 0),createIndex(row, 0));
 }
 
-
 void BluetoothDevicesModel::adapterPropertyChanged(QString name, QDBusVariant value)
 {
 	qDebug()<<"adapter property changed: "<<name<<" "<<value.variant();
 
-	if(name == "Discoverable")
+	if(name == "Powered")
+	{
+		poweredChanged(value.variant().toBool());
+	}
+	else if(name == "Discoverable")
 	{
 		discoverableChanged(value.variant().toBool());
 	}
