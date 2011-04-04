@@ -188,14 +188,20 @@ QString BluetoothDevice::path()
 
 void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 {
-    emit propertyChanged(name,value.variant());
-
     qDebug()<<"BluetoothDevice::propertyChanged()";
 
     if(name == "Connected")
     {
-	emit connectedChanged(value.variant().toBool());
+	    emit connectedChanged(value.variant().toBool());
     }
+
+    if(name == "UUIDs")
+    {
+	    emit profilesChanged(value.variant().toStringList());
+    }
+
+     emit propertyChanged(name,value.variant());
+
     ///TODO: create individual signals for each property
 }
 

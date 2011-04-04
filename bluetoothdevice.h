@@ -14,7 +14,7 @@ class BluetoothDevice : public QObject
 	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged);
 	Q_PROPERTY(bool audioConnected READ audioConnected NOTIFY audioConnectedChanged)
 	Q_PROPERTY(bool inputConnected READ inputConnected NOTIFY inputConnectedChanged)
-	Q_PROPERTY(QStringList profiles READ profiles)
+	Q_PROPERTY(QStringList profiles READ profiles NOTIFY profilesChanged)
 	Q_PROPERTY(QString alias READ alias)
 	Q_PROPERTY(QString name READ name)
 	Q_PROPERTY(QString address READ address)
@@ -29,6 +29,7 @@ signals:
 	void audioConnectedChanged(bool isConnected);
 	void inputConnectedChanged(bool isConnected);
 	void propertyChanged(QString name, QVariant value);
+	void profilesChanged(QStringList uuids);
 
 public slots:
 	void unpair();
