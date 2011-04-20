@@ -186,6 +186,17 @@ QString BluetoothDevice::path()
     return m_device->path();
 }
 
+bool BluetoothDevice::trusted()
+{
+    QVariantMap props = m_device->GetProperties();
+    return props["Trusted"].toBool();
+}
+
+void BluetoothDevice::setTrusted(bool trust)
+{
+    m_device->SetProperty("Trusted",QDBusVariant(trust));
+}
+
 void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 {
     qDebug()<<"BluetoothDevice::propertyChanged()";
@@ -200,6 +211,10 @@ void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
 	    emit profilesChanged(value.variant().toStringList());
     }
 
+    if(name == "Trusted")
+    {
+        emit trustedChanged(value.variant().toBool());
+    }
      emit propertyChanged(name,value.variant());
 
     ///TODO: create individual signals for each property

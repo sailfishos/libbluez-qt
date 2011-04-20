@@ -14,6 +14,7 @@ class BluetoothDevice : public QObject
 	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged);
 	Q_PROPERTY(bool audioConnected READ audioConnected NOTIFY audioConnectedChanged)
 	Q_PROPERTY(bool inputConnected READ inputConnected NOTIFY inputConnectedChanged)
+	Q_PROPERTY(bool trusted READ trusted WRITE setTrusted NOTIFY trustedChanged)
 	Q_PROPERTY(QStringList profiles READ profiles NOTIFY profilesChanged)
 	Q_PROPERTY(QString alias READ alias)
 	Q_PROPERTY(QString name READ name)
@@ -30,6 +31,7 @@ signals:
 	void inputConnectedChanged(bool isConnected);
 	void propertyChanged(QString name, QVariant value);
 	void profilesChanged(QStringList uuids);
+	void trustedChanged(bool trust);
 
 public slots:
 	void unpair();
@@ -39,6 +41,8 @@ public slots:
 	void connectInput();
 	void disconnect();
 	void disconnectAudio();
+	bool trusted();
+	void setTrusted(bool trust);
 
 	QStringList profiles();
 	bool isProfileSupported(QString profile);
