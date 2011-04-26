@@ -8,7 +8,7 @@ system(qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
 system(qdbusxml2cpp -p input.h:input.cpp input.xml)
 include(obex/obex.pri)
 
-VERSION+= 0.0.5
+VERSION+= 0.0.6
 
 TEMPLATE = lib
 TARGET = bluetooth-qt
