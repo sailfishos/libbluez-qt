@@ -12,7 +12,7 @@
 #include "bluetoothdevicemodel.h"
 
 BluetoothDevicesModel::BluetoothDevicesModel(QObject *parent) :
-	QAbstractListModel(parent), adapter(NULL)
+	QAbstractListModel(parent), m_connected(false), adapter(NULL)
 {
 	manager = new OrgBluezManagerInterface(
 			"org.bluez",
@@ -186,8 +186,8 @@ void BluetoothDevicesModel::adapterRemoved(QDBusObjectPath)
 		beginRemoveRows(QModelIndex(), 0, m_devices.size()-1);
 		foreach(BluetoothDevice* device, m_devices)
 		{
-
-			delete device;
+			updateConnected(device->connected());
+			device->deleteLater();
 		}
 		m_devices.clear();
 		endRemoveRows();
@@ -203,6 +203,7 @@ void BluetoothDevicesModel::deviceCreated(QDBusObjectPath devicepath)
 {
 	BluetoothDevice* device = new BluetoothDevice(devicepath,this);
 
+	updateConnected(device->connected());
 	connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
 
 	beginInsertRows(QModelIndex(),m_devices.size(),m_devices.size());
@@ -236,6 +237,10 @@ void BluetoothDevicesModel::devicePropertyChanged(QString name, QVariant value)
 		emit devicePaired(device);
 	}
 
+	else if(name == "Connected")
+	{
+		updateConnected(value.toBool());
+	}
 	int row = m_devices.indexOf(device);
 	if(row == -1) return; ///device doesn't exist.
 
@@ -257,5 +262,31 @@ void BluetoothDevicesModel::adapterPropertyChanged(QString name, QDBusVariant va
 	else if(name == "DiscoverableTimeout")
 	{
 		discoverableTimeoutChanged(value.variant().toInt());
+	}
+}
+
+void BluetoothDevicesModel::updateConnected(bool deviceconnectedStatus)
+{
+	if(deviceconnectedStatus)
+	{
+		if(!m_connected)
+		{
+			m_connected = true;
+			connectedChanged(m_connected);
+		}
+	}
+	else
+	{
+		bool temp = false;
+		foreach(BluetoothDevice* device, devices())
+		{
+			temp |= device->connected();
+		}
+
+		if(temp != m_connected)
+		{
+			m_connected = temp;
+			connectedChanged(m_connected);
+		}
 	}
 }

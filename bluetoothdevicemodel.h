@@ -14,6 +14,8 @@ class BluetoothDevicesModel : public QAbstractListModel
 	Q_PROPERTY(bool discoverable READ discoverable WRITE makeDiscoverable NOTIFY discoverableChanged);
 	Q_PROPERTY(int discoverableTimeout READ discoverableTimeout WRITE setDiscoverableTimeout NOTIFY discoverableTimeoutChanged);
 	Q_PROPERTY(bool adapterPresent READ adapterPresent NOTIFY adapterChanged);
+	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged);
+
 public:
 	explicit BluetoothDevicesModel(QObject *parent = 0);
 
@@ -28,6 +30,8 @@ public slots:
 	QString devicePath(QString name);
 
 	QList<BluetoothDevice*> devices(){ return m_devices; }
+
+	bool connected() { return m_connected; }
 
 	BluetoothDevice* device(QString path);
 	void makePowered(bool poweredValue);
@@ -52,8 +56,12 @@ signals:
 	void devicePaired(BluetoothDevice* device);
 	void discoverableChanged(bool discoverable);
 	void adapterChanged(bool adapterPresent);
+	void connectedChanged(bool isConnected);
 
 private:
+	void updateConnected(bool deviceconnectedStatus);
+
+	bool m_connected;
 	OrgBluezManagerInterface *manager;
 	OrgBluezAdapterInterface *adapter;
 	QList<BluetoothDevice*> m_devices;
