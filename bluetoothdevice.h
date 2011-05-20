@@ -63,6 +63,8 @@ private slots:
 	void inputPropertiesChanged(QString name, QDBusVariant value);
 
 private:
+	void setupProfiles();
+
 	OrgBluezDeviceInterface *m_device;
 	OrgBluezAudioInterface *audio;
 	OrgBluezInputInterface *input;
