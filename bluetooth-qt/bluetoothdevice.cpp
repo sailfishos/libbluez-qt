@@ -30,6 +30,12 @@ BluetoothDevice::BluetoothDevice(QDBusObjectPath path, QObject *parent) :
    setupProfiles();
 }
 
+bool BluetoothDevice::paired()
+{
+    QVariantMap props = m_device->GetProperties();
+    return props["Paired"].toBool();
+}
+
 void BluetoothDevice::setupProfiles()
 {
     if(isProfileSupported(BluetoothProfiles::hid))
@@ -238,6 +244,12 @@ void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
     {
         emit trustedChanged(value.variant().toBool());
     }
+
+    if(name == "Paired")
+    {
+        emit pairedChanged();
+    }
+
     emit propertyChanged(name,value.variant());
 
     ///TODO: create individual signals for each property... maybe
