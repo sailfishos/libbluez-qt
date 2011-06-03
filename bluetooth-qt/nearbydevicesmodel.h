@@ -23,10 +23,10 @@ namespace NearbyDevicesModelRoles
 class NearbyItem: public QObject
 {
 	Q_OBJECT
-	Q_PROPERTY(QString name READ name)
-	Q_PROPERTY(QString alias READ alias)
+	Q_PROPERTY(QString name READ name NOTIFY nameChanged)
+	Q_PROPERTY(QString alias READ alias NOTIFY aliasChanged)
 	Q_PROPERTY(QString address READ address)
-	Q_PROPERTY(QString icon READ icon)
+	Q_PROPERTY(QString icon READ icon NOTIFY iconChanged)
 	Q_PROPERTY(bool legacyPairing READ legacyPairing)
 public:
 	NearbyItem(QString name="", QString address="", QString icon="", bool legacy=false, QObject* parent = 0)
@@ -44,7 +44,14 @@ public:
 	QString icon() { return m_icon; }
 	bool legacyPairing() { return m_legacy; }
 
-	void setAlias(QString a) { m_alias = a; }
+	void setName(QString n) { m_name = n; nameChanged(); }
+	void setIcon(QString i) { m_icon = i; iconChanged(); }
+	void setAlias(QString a) { m_alias = a; aliasChanged(); }
+
+signals:
+	void nameChanged();
+	void aliasChanged();
+	void iconChanged();
 
 private:
 	QString m_name;

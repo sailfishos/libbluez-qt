@@ -121,24 +121,25 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 	{
 		if(path->address() == hwaddy)
 		{
-			found=true;
-			break;
+			path->setName(properties["Name"].toString());
+			path->setAlias(properties["Alias"].toString());
+			path->setIcon(properties["Icon"].toString());
+			return;
 		}
 	}
 
-	if(!found)
-	{
-		beginInsertRows(QModelIndex(), devices.size(), devices.size());
+	beginInsertRows(QModelIndex(), devices.size(), devices.size());
 
-		NearbyItem* item = new NearbyItem(properties["Name"].toString(),
-			       hwaddy,properties["Icon"].toString(),properties["LegacyPairing"].toBool(),this);
+	NearbyItem* item = new NearbyItem(properties["Name"].toString(),
+									  hwaddy,properties["Icon"].toString(),
+									  properties["LegacyPairing"].toBool(),this);
 
-		item->setAlias(properties["Alias"].toString());
+	item->setAlias(properties["Alias"].toString());
 
-		devices.append(item);
-		emit nearbyDeviceFound(devices.indexOf(item));
-		endInsertRows();
-	}
+	devices.append(item);
+	emit nearbyDeviceFound(devices.indexOf(item));
+	endInsertRows();
+
 }
 
 void NearbyDevicesModel::deviceRemoved(QString hwaddy)
