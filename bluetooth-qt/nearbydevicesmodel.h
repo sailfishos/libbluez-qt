@@ -24,6 +24,7 @@ class NearbyItem: public QObject
 {
 	Q_OBJECT
 	Q_PROPERTY(QString name READ name)
+	Q_PROPERTY(QString alias READ alias)
 	Q_PROPERTY(QString address READ address)
 	Q_PROPERTY(QString icon READ icon)
 	Q_PROPERTY(bool legacyPairing READ legacyPairing)
@@ -38,11 +39,16 @@ public:
 	}
 
 	QString name() { return m_name; }
+	QString alias() { return m_alias; }
 	QString address() { return m_addy; }
 	QString icon() { return m_icon; }
 	bool legacyPairing() { return m_legacy; }
+
+	void setAlias(QString a) { m_alias = a; }
+
 private:
 	QString m_name;
+	QString m_alias;
 	QString m_addy;
 	QString m_icon;
 	bool m_legacy;
