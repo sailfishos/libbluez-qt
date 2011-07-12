@@ -131,8 +131,15 @@ void BluetoothDevicesModel::setDiscoverableTimeout(int timeout)
 {
 	if(adapter)
 	{
-		bool success = adapter->setProperty("DiscoverableTimeout", timeout);
-		qDebug()<<"Setting discoverable timeout to "<<timeout<<": "<<success;
+		QDBusReply<void> reply = adapter->SetProperty("DiscoverableTimeout", QDBusVariant(timeout));
+		if(!reply.isValid())
+		{
+			qDebug()<<"error setting discoverable timeout: "<<reply.error().message();
+		}
+		else
+		{
+			qDebug()<<"Setting discoverable timeout to "<<timeout;
+		}
 	}
 }
 
