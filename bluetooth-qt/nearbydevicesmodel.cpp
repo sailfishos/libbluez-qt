@@ -121,9 +121,13 @@ void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 	{
 		if(path->address() == hwaddy)
 		{
+			bool nameUpdated = false;
+			if((path->name() == "") && (properties["Name"].toString() != "")) nameUpdated = true;
 			path->setName(properties["Name"].toString());
 			path->setAlias(properties["Alias"].toString());
 			path->setIcon(properties["Icon"].toString());
+
+			if(nameUpdated) emit nearbyDeviceFound(devices.indexOf(path));
 			return;
 		}
 	}
