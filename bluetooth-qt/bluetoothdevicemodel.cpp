@@ -31,6 +31,8 @@ BluetoothDevicesModel::BluetoothDevicesModel(QObject *parent) :
 		roles[i]=properties.property(i).name();
 	}
 
+	roles[roles.keys().count()+1] = "bluetoothDevice";
+
 	setRoleNames(roles);
 }
 
@@ -47,6 +49,11 @@ QVariant BluetoothDevicesModel::data(const QModelIndex &index, int role) const
 	{
 		qDebug()<<"index is not valid: "<<index.row()<<","<<index.column();
 		return QVariant(); ///this is retarded but it has to be done.
+	}
+
+	if(roleNames()[role] == "bluetoothDevice")
+	{
+		return QVariant::fromValue<QObject*>((QObject*)m_devices[index.row()]);
 	}
 
 	QString roleName = roleNames()[role];
