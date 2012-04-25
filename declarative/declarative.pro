@@ -20,8 +20,8 @@ OTHER_FILES += qmldir
 HEADERS += components.h 
 
 qmldir.files += qmldir
-qmldir.path = $$[QT_INSTALL_IMPORTS]/MeeGo/Bluetooth
+qmldir.path = $$[QT_INSTALL_IMPORTS]/Bluetooth
 
-target.path = $$[QT_INSTALL_IMPORTS]/MeeGo/Bluetooth
+target.path = $$[QT_INSTALL_IMPORTS]/Bluetooth
 
 INSTALLS += qmldir target
