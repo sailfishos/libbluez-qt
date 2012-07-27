@@ -8,13 +8,13 @@
 
 class BluetoothDevicesModel : public QAbstractListModel
 {
-    Q_OBJECT;
+	Q_OBJECT
 	
-	Q_PROPERTY(bool powered READ powered WRITE makePowered NOTIFY poweredChanged);
-	Q_PROPERTY(bool discoverable READ discoverable WRITE makeDiscoverable NOTIFY discoverableChanged);
-	Q_PROPERTY(int discoverableTimeout READ discoverableTimeout WRITE setDiscoverableTimeout NOTIFY discoverableTimeoutChanged);
-	Q_PROPERTY(bool adapterPresent READ adapterPresent NOTIFY adapterChanged);
-	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged);
+	Q_PROPERTY(bool powered READ powered WRITE makePowered NOTIFY poweredChanged)
+	Q_PROPERTY(bool discoverable READ discoverable WRITE makeDiscoverable NOTIFY discoverableChanged)
+	Q_PROPERTY(int discoverableTimeout READ discoverableTimeout WRITE setDiscoverableTimeout NOTIFY discoverableTimeoutChanged)
+	Q_PROPERTY(bool adapterPresent READ adapterPresent NOTIFY adapterChanged)
+	Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
 
 public:
 	explicit BluetoothDevicesModel(QObject *parent = 0);
@@ -34,6 +34,7 @@ public slots:
 	bool connected() { return m_connected; }
 
 	BluetoothDevice* device(QString path);
+	BluetoothDevice* deviceByHwAddress(QString addy);
 	void makePowered(bool poweredValue);
 	bool powered();
 	void makeDiscoverable(bool discoverableValue);

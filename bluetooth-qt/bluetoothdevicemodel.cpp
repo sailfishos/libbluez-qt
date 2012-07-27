@@ -91,6 +91,18 @@ BluetoothDevice* BluetoothDevicesModel::device(QString path)
 	return NULL;
 }
 
+BluetoothDevice *BluetoothDevicesModel::deviceByHwAddress(QString addy)
+{
+	foreach(BluetoothDevice* device, m_devices)
+	{
+		if(device->address().toLower() == addy.toLower())
+			return device;
+	}
+
+	qDebug()<<"Device not found for adddy: "<<addy;
+	return NULL;
+}
+
 void BluetoothDevicesModel::makePowered(bool poweredValue)
 {
 	if(adapter) adapter->SetProperty("Powered", QDBusVariant(poweredValue));
