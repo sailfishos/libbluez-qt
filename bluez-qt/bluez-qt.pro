@@ -11,11 +11,11 @@ include(obex/obex.pri)
 VERSION+= 0.0.9
 
 TEMPLATE = lib
-TARGET = bluetooth-qt
+TARGET = bluez-qt
 QT += dbus
 CONFIG += link_pkgconfig \
 	debug
-OTHER_FILES += bluetooth-qt.conf \
+OTHER_FILES += bluez-qt.conf \
 	manager.xml \
 	device.xml \
 	audiosrc.xml \
@@ -55,20 +55,20 @@ SOURCES += agentadaptor.cpp \
 	input.cpp
 
 target.path = $$INSTALL_ROOT/usr/lib
-headers.path = $$INSTALL_ROOT/usr/include/bluetooth-qt/
+headers.path = $$INSTALL_ROOT/usr/include/bluez-qt/
 headers.files = $$HEADERS
 INSTALLS += target \
 	headers
 
 CONFIG += create_pc create_prl
-QMAKE_PKGCONFIG_DESCRIPTION = Qt Bluetooth Library
+QMAKE_PKGCONFIG_DESCRIPTION = Bluez Qt Bindings Library
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
 pkgconfig.path = $$INSTALL_ROOT/usr/lib/pkgconfig
-pkgconfig.files = bluetooth-qt.pc
+pkgconfig.files = bluez-qt.pc
 
 INSTALLS += pkgconfig
 
 dbusfiles.path = $$INSTALL_ROOT/etc/dbus-1/system.d
-dbusfiles.files = bluetooth-qt.conf
+dbusfiles.files = bluez-qt.conf
 
 INSTALLS += dbusfiles

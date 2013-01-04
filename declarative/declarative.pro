@@ -3,21 +3,21 @@ QT += declarative dbus
 
 CONFIG += qt \
     plugin \
-    link_pkgconfig 
+    link_pkgconfig
 
-INCLUDEPATH += ../bluetooth-qt
-LIBS += -L../bluetooth-qt -lbluetooth-qt
+INCLUDEPATH += ../bluez-qt
+LIBS += -L../bluez-qt -lbluez-qt
 
-TARGET = Bluetooth-qt
+TARGET = Bluez-qt
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
 
 # Input
-SOURCES += components.cpp 
+SOURCES += components.cpp
 
 OTHER_FILES += qmldir
 
-HEADERS += components.h 
+HEADERS += components.h
 
 qmldir.files += qmldir
 qmldir.path = $$[QT_INSTALL_IMPORTS]/Bluetooth

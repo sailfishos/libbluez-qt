@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += bluetooth-qt declarative
+SUBDIRS += bluez-qt declarative
 CONFIG += ordered
