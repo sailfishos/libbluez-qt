@@ -1,0 +1,48 @@
+* Fri Jan 04 2013 Dmitry Rozhkov <dmitry.rozhkov@jollamobile.com> - 0.1.0
+- Renamed to libbluez-qt.
+
+* Mon Dec 10 2012 Marko Saukko <marko.saukko@jollamobile.com> - 0.0.9
+- Updated packaging.
+
+* Thu Jul 21 2011 Kevron Rees <kevronx_m_rees@linux.intel.com> - 0.0.9
+- patch fixes BMC #20660 - name not updating for nearby device
+
+* Mon Jun 06 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.9
+- fixes BMC #18634 - unclear bluetooth hw addresses on add device page
+
+* Thu May 26 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.8
+- fix for BMC #17017 - added paired device property
+
+* Fri May 20 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.7
+- Partial fix for BMC #14558 - implements missing Bluetooth, Internet properties
+
+* Tue Apr 08 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.6
+- fixes bug 16721, bluetooth devices should be trusted by default
+
+* Fri Apr 08 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.5
+- fixes bug 15496, bluetooth power on/off
+
+* Mon Feb 28 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.4
+- added discoverability timeout
+
+* Fri Feb 11 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.4
+- added properties and made roles more dynamic
+
+* Mon Jan 24 2011 Kevron Rees <kevron.m.rees@intel.com> - 0.0.4
+- fixed adapter business logic and agent default path ignorance
+
+* Thu Dec 16 2010 Kevron Rees <kevron.m.rees@intel.com> - 0.0.4
+- added patch that fixes -1 index.row() issue
+
+* Mon Nov 08 2010 Kevron Rees <kevron.m.rees@intel.com> - 0.0.4
+- added release signal and fixed pair-rejection crashing
+
+* Mon Sep 27 2010 Kevron Rees <kevron.m.rees@intel.com> - 0.0.3
+- added signals for when bluetooth adapter properties change
+
+* Tue Sep 15 2010 Kevron Rees <kevron.m.rees@intel.com> - 0.0.2
+- Fixed seg fault when no adapter is present
+
+* Tue Sep 15 2010 Kevron Rees <kevron.m.rees@intel.com> - 0.0.1
+- Initial importation of project
+

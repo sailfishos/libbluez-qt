@@ -19,10 +19,6 @@ void Components::registerTypes(const char *uri)
     qmlRegisterType<BluetoothDevicesModel>(uri,0,0,"BluetoothDevicesModel");
 }
 
-void Components::initializeEngine(QDeclarativeEngine *engine, const char *uri)
-{
-    Q_UNUSED(uri);
-    Q_UNUSED(engine);
-}
-
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN(Components);
+#endif

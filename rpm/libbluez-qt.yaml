@@ -1,0 +1,38 @@
+Name: libbluez-qt
+Summary: Library for accessing bluetooth functionality in Qt
+Version: 0.1.0
+Release: 1
+Group: System/GUI/Other
+License: Apache License 2.0
+URL: https://github.com/nemomobile/libbluez-qt
+Sources:
+    - "libbluez-qt-%{version}.tar.bz2"
+Description: |
+    This is a library for accessing bluetooth through bluez functionality in Qt.
+PkgBR:
+    - doxygen
+PkgConfigBR:
+    - QtCore >= 4.6.0
+    - QtDBus
+    - QtOpenGL
+    - QtGui
+    - dbus-1
+Configure: none
+Builder: qmake
+Files:
+- "%{_libdir}/libbluez-qt.so.*"
+- "%{_libdir}/qt4/imports/Bluetooth/*"
+- "%{_sysconfdir}/dbus-1/system.d/bluez-qt.conf"
+SubPackages:
+ - Name: devel
+   Summary: Development files for bluez-qt
+   Group: Development/Libraries
+   Files:
+       - "%{_includedir}/bluez-qt/*.h"
+       - "%{_libdir}/libbluez-qt.so"
+       - "%{_libdir}/*.prl"
+       - "%{_libdir}/pkgconfig/*.pc"
+       - "%{_libdir}/*.pc"
+   Description: |
+    This package contains the files necessary to develop
+    applications using qt to access bluetooth devices using bluez
