@@ -42,6 +42,11 @@ public slots:
 	int discoverableTimeout();
 	void setDiscoverableTimeout(int timeout);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+protected:
+    virtual QHash<int, QByteArray> roleNames() const;
+#endif
+
 private slots:
 	void adapterAdded(QDBusObjectPath);
 	void adapterRemoved(QDBusObjectPath);
@@ -66,6 +71,7 @@ private:
 	OrgBluezManagerInterface *manager;
 	OrgBluezAdapterInterface *adapter;
 	QList<BluetoothDevice*> m_devices;
+    QHash<int, QByteArray> m_roleNames;
 };
 
 #endif // BLUETOOTHDEVICEMODEL_H

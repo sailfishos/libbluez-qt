@@ -9,16 +9,29 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#include <QObject>
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QtQml/QQmlExtensionPlugin>
+#include <QtQml/qqml.h>
+#else
 #include <QtDeclarative/qdeclarative.h>
 #include <QtDeclarative/QDeclarativeExtensionPlugin>
+#endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+class Components : public QQmlExtensionPlugin
+#else
 class Components : public QDeclarativeExtensionPlugin
+#endif
 {
     Q_OBJECT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    Q_PLUGIN_METADATA(IID "org.nemo.bluez-qt5")
+#endif
 
 public:
     void registerTypes(const char *uri);
-    void initializeEngine(QDeclarativeEngine *engine, const char *uri);
 };
 
 #endif // COMPONENTS_H

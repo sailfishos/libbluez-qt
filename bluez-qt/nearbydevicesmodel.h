@@ -88,6 +88,11 @@ public slots:
 
 	void setAdapterProperty(QString name, QVariant value);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+protected:
+    virtual QHash<int, QByteArray> roleNames() const;
+#endif
+
 private slots:
 	void adapterAdded(QDBusObjectPath);
 	void adapterRemoved(QDBusObjectPath);
@@ -112,6 +117,7 @@ private:
 	OrgBluezManagerInterface *manager;
 	OrgBluezAdapterInterface *adapter;
 	AsyncAgent* agent;	
+    QHash<int, QByteArray> m_roleNames;
 };
 
 #endif // NEARBYDEVICESMODEL_H

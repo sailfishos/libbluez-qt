@@ -22,19 +22,26 @@ BluetoothDevicesModel::BluetoothDevicesModel(QObject *parent) :
 	connect(manager,SIGNAL(AdapterRemoved(QDBusObjectPath)),this,SLOT(adapterRemoved(QDBusObjectPath)));
 	adapterAdded(QDBusObjectPath());
 
-	QHash<int, QByteArray> roles;
-
 	QMetaObject properties = BluetoothDevice::staticMetaObject;
 
 	for(int i=0; i<properties.propertyCount();i++)
 	{
-		roles[i]=properties.property(i).name();
+		m_roleNames[i]=properties.property(i).name();
 	}
 
-	roles[roles.keys().count()+1] = "bluetoothDevice";
+	m_roleNames[m_roleNames.keys().count()+1] = "bluetoothDevice";
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 	setRoleNames(roles);
+#endif
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+QHash<int, QByteArray> BluetoothDevicesModel::roleNames() const
+{
+    return m_roleNames;
+}
+#endif
 
 int BluetoothDevicesModel::rowCount(const QModelIndex &) const
 {

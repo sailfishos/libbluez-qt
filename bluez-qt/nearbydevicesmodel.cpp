@@ -23,15 +23,22 @@ NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 	connect(manager,SIGNAL(AdapterRemoved(QDBusObjectPath)),this,SLOT(adapterRemoved(QDBusObjectPath)));
 	adapterAdded(QDBusObjectPath());
 
-	QHash<int,QByteArray> roles;
 	QMetaObject properties = NearbyItem::staticMetaObject;
 	for(int i=0; i<properties.propertyCount();i++)
 	{
-		roles[i]=properties.property(i).name();
+		m_roleNames[i]=properties.property(i).name();
 	}
-	setRoleNames(roles);
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+	setRoleNames(m_roleNames);
+#endif
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+QHash<int, QByteArray> NearbyDevicesModel::roleNames() const
+{
+    return m_roleNames;
+}
+#endif
 
 int NearbyDevicesModel::rowCount(const QModelIndex &parent) const
 {
@@ -111,7 +118,7 @@ void NearbyDevicesModel::replyRequestPidCode(QString pidCode)
 
 void NearbyDevicesModel::setAdapterProperty(QString name, QVariant value)
 {
-	if(adapter) adapter->setProperty(name.toAscii().data(),value);
+	if(adapter) adapter->setProperty(name.toLatin1().data(),value);
 }
 
 void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
