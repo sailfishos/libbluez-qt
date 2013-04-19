@@ -1,11 +1,13 @@
-system(qdbusxml2cpp -p bluemanager.h:bluemanager.cpp manager.xml)
-system(qdbusxml2cpp -p blueadapter.h:blueadapter.cpp adapter.xml)
-system(qdbusxml2cpp -p bluedevice.h:bluedevice.cpp -i devicetypes.h device.xml)
-system(qdbusxml2cpp -p audio.h:audio.cpp audio.xml)
-system(qdbusxml2cpp -p audiosink.h:audiosink.cpp audiosink.xml)
-system(qdbusxml2cpp -p audiosource.h:audiosource.cpp audiosrc.xml)
-system(qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
-system(qdbusxml2cpp -p input.h:input.cpp input.xml)
+# TODO: someone smarter than me should evaluate DBUS_ADAPTORS/DBUS_INTERFACES
+# here and see if they can be used instead of all these system calls
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p bluemanager.h:bluemanager.cpp manager.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p blueadapter.h:blueadapter.cpp adapter.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p bluedevice.h:bluedevice.cpp -i devicetypes.h device.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p audio.h:audio.cpp audio.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p audiosink.h:audiosink.cpp audiosink.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p audiosource.h:audiosource.cpp audiosrc.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
+system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p input.h:input.cpp input.xml)
 include(obex/obex.pri)
 
 VERSION+= 0.0.9
