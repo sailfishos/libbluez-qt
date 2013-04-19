@@ -18,7 +18,7 @@ PkgConfigBR:
     - Qt5Qml
     - dbus-1
 Configure: none
-Builder: qmake
+Builder: qmake5
 Files:
 - "%{_libdir}/libbluez-qt5.so.*"
 - "%{_libdir}/qt5/qml/Bluetooth/*"
