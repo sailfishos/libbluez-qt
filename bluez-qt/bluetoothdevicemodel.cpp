@@ -32,7 +32,7 @@ BluetoothDevicesModel::BluetoothDevicesModel(QObject *parent) :
 	m_roleNames[m_roleNames.keys().count()+1] = "bluetoothDevice";
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-	setRoleNames(roles);
+	setRoleNames(m_roleNames);
 #endif
 }
 
