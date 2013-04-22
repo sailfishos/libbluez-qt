@@ -12,19 +12,16 @@
 
 #include <QObject>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#include <QtQml/QQmlExtensionPlugin>
-#include <QtQml/qqml.h>
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+# include <QtDeclarative/qdeclarative.h>
+# include <QtDeclarative/QDeclarativeExtensionPlugin>
 #else
-#include <QtDeclarative/qdeclarative.h>
-#include <QtDeclarative/QDeclarativeExtensionPlugin>
+# include <QtQml/QQmlExtensionPlugin>
+# include <QtQml/qqml.h>
+# define QDeclarativeExtensionPlugin QQmlExtensionPlugin
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-class Components : public QQmlExtensionPlugin
-#else
 class Components : public QDeclarativeExtensionPlugin
-#endif
 {
     Q_OBJECT
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -43,3 +40,5 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN(Components);
 #endif
+
+#include "components.moc"
