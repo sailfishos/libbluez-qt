@@ -1,7 +1,7 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
           "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
-  <interface name="org.openobex.Session">
+  <interface name="org.bluez.obex.Session">
     <method name="GetProperties">
       <arg type="a{sv}" direction="out"/>
       <annotation name="com.trolltech.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
@@ -14,7 +14,7 @@
     </method>
     <method name="Close"/>
   </interface>
-  <interface name="org.openobex.FileTransfer">
+  <interface name="org.bluez.obex.FileTransfer">
     <method name="ChangeFolder">
       <arg type="s" direction="in"/>
     </method>
@@ -46,4 +46,3 @@
     </method>
   </interface>
 </node>
-

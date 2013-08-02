@@ -12,49 +12,49 @@ class ObexFtp : public QObject
 Q_OBJECT
 public:
 
-	enum State
-	{
-		Disconnected = 0,
-		Connecting,
-		Connected,
-		Busy
-	};
+        enum State
+        {
+                Disconnected = 0,
+                Connecting,
+                Connected,
+                Busy
+        };
 
-	explicit ObexFtp(QString device, QObject *parent = 0);
+        explicit ObexFtp(QString device, QObject *parent = 0);
 
-	bool isConnected();
+        bool isConnected();
 
 public slots:
 
-	void connect();
-	void disconnect();
-	void cancel();
+        void connect();
+        void disconnect();
+        void cancel();
 
-	void transferFile(QString localfile, QString remotefile);
+        void transferFile(QString localfile, QString remotefile);
 
 private slots:
-	void finishedTransfer(QDBusPendingCallWatcher*);
-	void finishedConnecting(QDBusPendingCallWatcher*);
+        void finishedTransfer(QDBusPendingCallWatcher*);
+        void finishedConnecting(QDBusPendingCallWatcher*);
 
-	///for the agent adaptor:
-	void Complete(const QDBusObjectPath &path);
-	void Error(const QDBusObjectPath &path, const QString &error);
-	void Progress(const QDBusObjectPath &path, qulonglong transferred);
-	void Release();
+        ///for the agent adaptor:
+        void Complete(const QDBusObjectPath &path);
+        void Error(const QDBusObjectPath &path, const QString &error);
+        void Progress(const QDBusObjectPath &path, qulonglong transferred);
+        void Release();
 
 
 signals:
-	void transferProgress(quint64 done, quint64 total);
-	void transferComplete();
-	void error(QString);
-	void connected();
+        void transferProgress(quint64 done, quint64 total);
+        void transferComplete();
+        void error(QString);
+        void connected();
 
 private:
-	QString m_device;
-	OrgOpenobexSessionInterface* m_session;
-	OrgOpenobexFileTransferInterface* m_ftp;
-	OrgOpenobexClientInterface* m_client;
-	ObexAgentAdaptor* agent;
+        QString m_device;
+        OrgBluezObexSessionInterface* m_session;
+        OrgBluezObexFileTransferInterface* m_ftp;
+        ObexClientInterface* m_client;
+        ObexAgentAdaptor* agent;
 
 };
 
