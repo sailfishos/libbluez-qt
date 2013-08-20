@@ -11,14 +11,14 @@
 
 #include "bluetoothbaseagent.h"
 
-#include "agentadaptor.h"
+#include "bluetoothagentadaptor.h"
 #include "bluemanager.h"
 #include "blueadapter.h"
 #include <QTimer>
 
 BluetoothBaseAgent::BluetoothBaseAgent(QString path, QObject *parent):QObject(parent),requestAccepted(false),m_path(path)
 {
-	new AgentAdaptor(this);
+	new BluetoothAgentAdaptor(this);
 	QDBusConnection::systemBus().registerObject(path,this);
 }
 

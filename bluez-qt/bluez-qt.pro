@@ -26,7 +26,7 @@ OTHER_FILES += bluez-qt.conf \
 	adapter.xml \
 	headset.xml \
     input.xml
-HEADERS += agentadaptor.h \
+HEADERS += bluetoothagentadaptor.h \
 	bluemanager.h \
 	bluedevice.h \
 	blueadapter.h \
@@ -42,7 +42,7 @@ HEADERS += agentadaptor.h \
 	bluetoothdevicemodel.h \
 	audio.h \
 	input.h
-SOURCES += agentadaptor.cpp \
+SOURCES += bluetoothagentadaptor.cpp \
 	bluemanager.cpp \
 	bluedevice.cpp \
 	blueadapter.cpp \
