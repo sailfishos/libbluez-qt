@@ -11,19 +11,19 @@
 
 
 
-#ifndef AGENTADAPTOR_H
-#define AGENTADAPTOR_H
+#ifndef BLUETOOTHAGENTADAPTOR_H
+#define BLUETOOTHAGENTADAPTOR_H
 
 #include <QDBusAbstractAdaptor>
 #include "bluetoothbaseagent.h"
 
-class AgentAdaptor : public QDBusAbstractAdaptor
+class BluetoothAgentAdaptor : public QDBusAbstractAdaptor
 {
 Q_OBJECT
 Q_CLASSINFO("D-Bus Interface", "org.bluez.Agent");
 public:
-	AgentAdaptor(BluetoothBaseAgent *parent = NULL);
-	virtual ~AgentAdaptor();
+    BluetoothAgentAdaptor(BluetoothBaseAgent *parent = NULL);
+    virtual ~BluetoothAgentAdaptor();
 
 signals:
 
@@ -41,4 +41,4 @@ private:
 	BluetoothBaseAgent *agent;
 };
 
-#endif // AGENTADAPTOR_H
+#endif // BLUETOOTHAGENTADAPTOR_H

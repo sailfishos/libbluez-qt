@@ -9,20 +9,20 @@
  *
  */
 
-#include "agentadaptor.h"
+#include "bluetoothagentadaptor.h"
 
-AgentAdaptor::AgentAdaptor(BluetoothBaseAgent *parent) :
+BluetoothAgentAdaptor::BluetoothAgentAdaptor(BluetoothBaseAgent *parent) :
     QDBusAbstractAdaptor(parent), agent(parent)
 {
 
 }
 
-AgentAdaptor::~AgentAdaptor()
+BluetoothAgentAdaptor::~BluetoothAgentAdaptor()
 {
 
 }
 
-void AgentAdaptor::Authorize(const QDBusObjectPath &deviceObject, const QString &uuid)
+void BluetoothAgentAdaptor::Authorize(const QDBusObjectPath &deviceObject, const QString &uuid)
 {
 	if (!agent)
 	{
@@ -34,7 +34,7 @@ void AgentAdaptor::Authorize(const QDBusObjectPath &deviceObject, const QString 
 	agent->authorize(device, uuid);
 }
 
-void AgentAdaptor::Cancel()
+void BluetoothAgentAdaptor::Cancel()
 {
 	if(!agent)
 	{
@@ -44,7 +44,7 @@ void AgentAdaptor::Cancel()
 	agent->cancel();
 }
 
-void AgentAdaptor::ConfirmModeChange(const QString &mode)
+void BluetoothAgentAdaptor::ConfirmModeChange(const QString &mode)
 {
 	if(!agent)
 	{
@@ -54,7 +54,7 @@ void AgentAdaptor::ConfirmModeChange(const QString &mode)
 	agent->confirmModeChange(mode);
 }
 
-void AgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint passkey, uint entered)
+void BluetoothAgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint passkey, uint entered)
 {
 	if(!agent)
 	{
@@ -66,7 +66,7 @@ void AgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint pass
 	agent->displayPasskey(device, passkey, entered);
 }
 
-void AgentAdaptor::Release()
+void BluetoothAgentAdaptor::Release()
 {
 	if(!agent)
 	{
@@ -76,7 +76,7 @@ void AgentAdaptor::Release()
 	agent->release();
 }
 
-void AgentAdaptor::RequestConfirmation(const QDBusObjectPath &deviceObject, uint passkey)
+void BluetoothAgentAdaptor::RequestConfirmation(const QDBusObjectPath &deviceObject, uint passkey)
 {
 	if(!agent)
 	{
@@ -88,7 +88,7 @@ void AgentAdaptor::RequestConfirmation(const QDBusObjectPath &deviceObject, uint
 	agent->requestConfirmation(device, passkey);
 }
 
-uint AgentAdaptor::RequestPasskey(const QDBusObjectPath &deviceObject)
+uint BluetoothAgentAdaptor::RequestPasskey(const QDBusObjectPath &deviceObject)
 {
 	if(!agent)
 	{
@@ -100,7 +100,7 @@ uint AgentAdaptor::RequestPasskey(const QDBusObjectPath &deviceObject)
 	return agent->requestPasskey(device);
 }
 
-QString AgentAdaptor::RequestPinCode(const QDBusObjectPath &deviceObject)
+QString BluetoothAgentAdaptor::RequestPinCode(const QDBusObjectPath &deviceObject)
 {
 	if(!agent)
 	{
