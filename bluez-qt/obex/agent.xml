@@ -2,18 +2,15 @@
           "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="org.bluez.obex.Agent">
-    <method name="Release">
+    <method name="Authorize">
+      <arg type="o" direction="in" name="transfer"/>
+      <arg type="s" direction="in" name="bt_address"/>
+      <arg type="s" direction="in" name="name"/>
+      <arg type="s" direction="in" name="type"/>
+      <arg type="i" direction="in" name="length"/>
+      <arg type="i" direction="in" name="time"/>
+      <arg type="s" direction="out"/>
     </method>
-    <method name="Progress">
-      <arg direction="in"  type="o" name="path" />
-      <arg direction="in"  type="t" name="transferred" />
-    </method>
-    <method name="Complete">
-      <arg direction="in"  type="o" name="path" />
-    </method>
-    <method name="Error">
-      <arg direction="in"  type="o" name="path" />
-      <arg direction="in"  type="s" name="error" />
-    </method>
+    <method name="Cancel"/>
   </interface>
 </node>
