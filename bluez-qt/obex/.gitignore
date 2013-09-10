@@ -1,0 +1,13 @@
+# qdbusxml2cpp generated files
+/obexagent.cpp
+/obexagent.h
+/obexclient.cpp
+/obexclient.h
+/obexfiletransfer.cpp
+/obexfiletransfer.h
+/obexobjectpush.cpp
+/obexobjectpush.h
+/obexsession.cpp
+/obexsession.h
+/obextransfer.cpp
+/obextransfer.h
