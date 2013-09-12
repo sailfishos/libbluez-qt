@@ -10,267 +10,318 @@
  */
 
 #include "bluetoothdevice.h"
-#include "blueadapter.h"
-#include "bluemanager.h"
-#include "btprofiles.h"
-#include "audiosink.h"
-#include "audiosource.h"
-#include "headset.h"
+#include "bluedevice.h"
 #include "audio.h"
-#include "input.h"
 
-BluetoothDevice::BluetoothDevice(QDBusObjectPath path, QObject *parent) :
-	QObject(parent),m_device(new OrgBluezDeviceInterface("org.bluez",path.path(),QDBusConnection::systemBus(),this)),audio(NULL),input(NULL)
+#include <QDBusPendingReply>
+#include <QDBusPendingCallWatcher>
+
+static const QLatin1String PropAddress("Address");
+static const QLatin1String PropName("Name");
+static const QLatin1String PropVendor("Vendor");
+static const QLatin1String PropVendorSource("VendorSource");
+static const QLatin1String PropProduct("Product");
+static const QLatin1String PropVersion("Version");
+static const QLatin1String PropIcon("Icon");
+static const QLatin1String PropClassOfDevice("ClassOfDevice");
+static const QLatin1String PropUuids("UUIDs");
+static const QLatin1String PropServices("Services");
+static const QLatin1String PropPaired("Paired");
+static const QLatin1String PropConnected("Connected");
+static const QLatin1String PropTrusted("Trusted");
+static const QLatin1String PropBlocked("Blocked");
+static const QLatin1String PropAlias("Alias");
+static const QLatin1String PropNodes("Nodes");
+static const QLatin1String PropAdapter("Adapter");
+static const QLatin1String PropLegacyPairing("LegacyPairing");
+
+static const QLatin1String AudioPropState("State");
+static const QLatin1String AudioPropStateConnecting("connecting");
+static const QLatin1String AudioPropStateConnected("connected");
+static const QLatin1String AudioPropStateDisconnecting("disconnecting");
+static const QLatin1String AudioPropStateDisconnected("disconnected");
+
+BluetoothDevice::BluetoothDevice(QObject *parent)
+    : QObject(parent)
 {
-    if(!m_device->isValid())
-	return;
-    QObject::connect(m_device,SIGNAL(PropertyChanged(QString,QDBusVariant)),
-		     this,SLOT(propertyChanged(QString,QDBusVariant)));
-
-   setupProfiles();
+    init();
 }
 
-bool BluetoothDevice::paired()
+BluetoothDevice::BluetoothDevice(const QDBusObjectPath &objectPath, QObject *parent)
+    : QObject(parent)
+    , m_objectPath(objectPath.path())
 {
-    QVariantMap props = m_device->GetProperties();
-    return props["Paired"].toBool();
+    init();
 }
 
-void BluetoothDevice::setupProfiles()
+BluetoothDevice::~BluetoothDevice()
 {
-    if(isProfileSupported(BluetoothProfiles::hid))
-    {
-        if(!input)
-        {
-            input = new OrgBluezInputInterface("org.bluez", m_device->path(),
-                                               QDBusConnection::systemBus(), this);
-            connect(input,SIGNAL(PropertyChanged(QString,QDBusVariant)),this,
-                    SLOT(inputPropertiesChanged(QString,QDBusVariant)));
-        }
-    }
-    else
-    {
-        if(input)
-        {
-            input->deleteLater();
-            input = NULL;
-        }
-    }
+}
 
-    if(isProfileSupported(BluetoothProfiles::a2sink) || isProfileSupported(BluetoothProfiles::hs))
-    {
-        if(!audio) audio = new OrgBluezAudioInterface("org.bluez", m_device->path(), QDBusConnection::systemBus(), this);
-
-        connect(audio,SIGNAL(PropertyChanged(QString,QDBusVariant)),this,SLOT(audioPropertiesChanged(QString,QDBusVariant)));
-    }
-    else
-    {
-        if(audio)
-        {
-            audio->deleteLater();
-            audio = NULL;
-        }
+void BluetoothDevice::init()
+{
+    m_device = 0;
+    m_audio = 0;
+    m_audioConnectionState = AudioStateUnknown;
+    m_ready = false;
+    if (!m_objectPath.isEmpty()) {
+        setPath(m_objectPath);
     }
 }
 
-void BluetoothDevice::unpair()
+QString BluetoothDevice::path() const
 {
-    OrgBluezManagerInterface manager(
-	    "org.bluez",
-	    "/", QDBusConnection::systemBus());
+    return m_objectPath;
+}
 
-    QDBusObjectPath adapterpath = manager.DefaultAdapter();
+void BluetoothDevice::setPath(const QString &objectPath)
+{
+    delete m_device;
+    m_device = 0;
 
-    if(adapterpath.path().isEmpty()) return;
+    if (!objectPath.isEmpty()) {
+        m_device = new OrgBluezDeviceInterface("org.bluez", objectPath, QDBusConnection::systemBus(), this);
+        connect(m_device, SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                SLOT(propertyChanged(QString,QDBusVariant)));
 
-    OrgBluezAdapterInterface adapter(
-	    "org.bluez",
-	    adapterpath.path(),
-	    QDBusConnection::systemBus());
+        QDBusPendingReply<QVariantMap> result = m_device->GetProperties();
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
+        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                         SLOT(getPropertiesFinished(QDBusPendingCallWatcher*)));
 
-    adapter.RemoveDevice(QDBusObjectPath(m_device->path()));
+        m_audio = new OrgBluezAudioInterface("org.bluez", m_objectPath, QDBusConnection::systemBus(), this);
+        connect(m_audio, SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                SLOT(audioPropertyChanged(QString,QDBusVariant)));
+    }
+}
+
+BluetoothDevice::AudioConnectionState BluetoothDevice::audioConnectionState() const
+{
+    return m_audioConnectionState;
+}
+
+QString BluetoothDevice::address() const
+{
+    if (m_properties.contains(PropAddress))
+        return m_properties[PropAddress].toString();
+    return QString();
+}
+
+QString BluetoothDevice::name() const
+{
+    if (m_properties.contains(PropName))
+        return m_properties[PropName].toString();
+    return QString();
+}
+
+QString BluetoothDevice::icon() const
+{
+    if (m_properties.contains(PropIcon))
+        return m_properties[PropIcon].toString();
+    return QString();
+}
+
+quint32 BluetoothDevice::classOfDevice() const
+{
+    if (m_properties.contains(PropClassOfDevice))
+        return (quint32)m_properties[PropClassOfDevice].toUInt();
+    return 0;
+}
+
+QStringList BluetoothDevice::profiles() const
+{
+    if (m_properties.contains(PropUuids))
+        return m_properties[PropUuids].toStringList();
+    return QStringList();
+}
+
+bool BluetoothDevice::paired() const
+{
+    if (m_properties.contains(PropPaired))
+        return m_properties[PropPaired].toBool();
+    return false;
+}
+
+bool BluetoothDevice::connected() const
+{
+    if (m_properties.contains(PropConnected))
+        return m_properties[PropConnected].toBool();
+    return false;
+}
+
+bool BluetoothDevice::trusted() const
+{
+    if (m_properties.contains(PropTrusted))
+        return m_properties[PropTrusted].toBool();
+    return false;
+}
+
+void BluetoothDevice::setTrusted(bool trusted)
+{
+    if (trusted == this->trusted())
+        return;
+
+    if (m_device)
+        m_device->SetProperty(PropTrusted, QDBusVariant(trusted));
+}
+
+QString BluetoothDevice::alias() const
+{
+    if (m_properties.contains(PropAlias))
+        return m_properties[PropAlias].toString();
+    return QString();
+}
+
+void BluetoothDevice::setAlias(const QString &alias)
+{
+    if (alias == this->alias())
+        return;
+
+    if (m_device)
+        m_device->SetProperty(PropAlias, QDBusVariant(alias));
+}
+
+bool BluetoothDevice::legacyPairing() const
+{
+    if (m_properties.contains(PropLegacyPairing))
+        return m_properties[PropLegacyPairing].toBool();
+    return false;
 }
 
 void BluetoothDevice::connectAudio()
 {
-    audio->Connect();
-}
-void BluetoothDevice::connectAudioSrc()
-{
-
-    if(isProfileSupported(BluetoothProfiles::a2src))
-    {
-        OrgBluezAudioSourceInterface source("org.bluez",m_device->path(),
-                                            QDBusConnection::systemBus());
-        source.Connect();
+    if (m_audio) {
+        m_audio->Connect();
     }
-}
-
-QString BluetoothDevice::connectSerial()
-{
-    if(isProfileSupported(BluetoothProfiles::spp))
-    {
-        QDBusInterface interface("org.bluez",m_device->path(),"org.bluez.Serial",QDBusConnection::systemBus());
-        QDBusReply<QString> reply = interface.call(QDBus::AutoDetect, "Connect","spp");
-
-        if(reply.isValid()) return reply;
-        else qDebug()<<"Error connecting spp profile: "<<reply.error().message();
-    }
-
-    return "";
-}
-
-void BluetoothDevice::connectInput()
-{
-    input->Connect();
-}
-
-void BluetoothDevice::disconnect()
-{
-    m_device->Disconnect();
 }
 
 void BluetoothDevice::disconnectAudio()
 {
-    if(!audio) audio = new OrgBluezAudioInterface("org.bluez", m_device->path(), QDBusConnection::systemBus(), this);
-
-    audio->Disconnect();
-}
-
-QStringList BluetoothDevice::profiles()
-{
-    QVariantMap props = m_device->GetProperties();
-
-    QStringList uuidlist = props["UUIDs"].toStringList();
-
-    return uuidlist;
-}
-
-bool BluetoothDevice::isProfileSupported(QString profile)
-{
-    QVariantMap props = m_device->GetProperties();
-
-    QStringList uuidlist = props["UUIDs"].toStringList();
-
-    return uuidlist.contains(profile.toLower());
-}
-
-bool BluetoothDevice::connected()
-{
-    QVariantMap props = m_device->GetProperties();
-    return props["Connected"].toBool();
-}
-
-bool BluetoothDevice::audioConnected()
-{
-    if(!audio)
-    {
-        audio = new OrgBluezAudioInterface("org.bluez",m_device->path(), QDBusConnection::systemBus(),this);
-        connect(audio,SIGNAL(PropertyChanged(QString,QDBusVariant)),this,SLOT(audioPropertiesChanged(QString,QDBusVariant)));
+    if (m_audio) {
+        m_audio->Disconnect();
     }
-
-    QVariantMap props = audio->GetProperties();
-    return props["State"].toString() == "connected";
 }
 
-bool BluetoothDevice::inputConnected()
+void BluetoothDevice::disconnect()
 {
-    if(!input)
-    {
-        input = new OrgBluezInputInterface("org.bluez",m_device->path(), QDBusConnection::systemBus(),this);
-        connect(input,SIGNAL(PropertyChanged(QString,QDBusVariant)),this, SLOT(inputPropertiesChanged(QString,QDBusVariant)));
+    if (m_device) {
+        m_device->Disconnect();
     }
-
-    QVariantMap props = input->GetProperties();
-    return props["Connected"].toBool();
 }
 
-QString BluetoothDevice::alias()
+bool BluetoothDevice::updateProperty(const QString &name, const QVariant &value)
 {
-    QVariantMap props = m_device->GetProperties();
-    return props["Alias"].toString();
-}
+    if (m_properties[name] == value)
+        return false;
 
-QString BluetoothDevice::name()
-{
-    QVariantMap props = m_device->GetProperties();
-    return props["Name"].toString();
-}
+    bool propertyHandled = true;
+    m_properties[name] = value;
 
-QString BluetoothDevice::address()
-{
-    QVariantMap props = m_device->GetProperties();
-    return props["Address"].toString();
-}
-
-QString BluetoothDevice::icon()
-{
-    QVariantMap props = m_device->GetProperties();
-    return props["Icon"].toString();
-}
-
-QString BluetoothDevice::path()
-{
-    return m_device->path();
-}
-
-bool BluetoothDevice::trusted()
-{
-    QVariantMap props = m_device->GetProperties();
-    return props["Trusted"].toBool();
-}
-
-void BluetoothDevice::setTrusted(bool trust)
-{
-    m_device->SetProperty("Trusted",QDBusVariant(trust));
-}
-
-void BluetoothDevice::propertyChanged(QString name,QDBusVariant value)
-{
-    qDebug()<<"BluetoothDevice::propertyChanged()";
-
-    if(name == "Connected")
-    {
-	    emit connectedChanged(value.variant().toBool());
-    }
-
-    if(name == "UUIDs")
-    {
-	    emit profilesChanged(value.variant().toStringList());
-		setupProfiles();
-    }
-
-    if(name == "Trusted")
-    {
-        emit trustedChanged(value.variant().toBool());
-    }
-
-    if(name == "Paired")
-    {
+    if (name == PropAddress) {
+        emit addressChanged();
+    } else if (name == PropName) {
+        emit nameChanged();
+    } else if (name == PropIcon) {
+        emit iconChanged();
+    } else if (name == PropClassOfDevice) {
+        emit classOfDeviceChanged();
+    } else if (name == PropUuids) {
+        emit profilesChanged();
+    } else if (name == PropPaired) {
         emit pairedChanged();
+    } else if (name == PropConnected) {
+        emit connectedChanged();
+    } else if (name == PropTrusted) {
+        emit trustedChanged();
+    } else if (name == PropAlias) {
+        emit aliasChanged();
+    } else if (name == PropLegacyPairing) {
+        emit legacyPairingChanged();
+    } else if (name == PropVendor
+               || name == PropVendorSource
+               || name == PropProduct
+               || name == PropVersion
+               || name == PropServices
+               || name == PropBlocked
+               || name == PropNodes
+               || name == PropAdapter
+               || name == PropLegacyPairing) {
+        // not handling these properties for now
+        propertyHandled = false;
+    } else {
+        qWarning() << "BluetoothDevice: unhandled property change:" << name;
+        propertyHandled = false;
     }
 
-    emit propertyChanged(name,value.variant());
-
-    ///TODO: create individual signals for each property... maybe
+    return propertyHandled;
 }
 
-void BluetoothDevice::audioPropertiesChanged(QString name,QDBusVariant value)
-{
-    ///don't think i need to be doing this:
-    //emit propertyChanged(name, value.variant());
+#define UPDATE_PROPERTY(prop, values) {\
+    if (values.contains(prop) && values[prop] != m_properties[prop]) \
+        updateProperty(prop, values[prop]); \
+} \
 
-    if(name == "State")
-    {
-        emit audioConnectedChanged(value.variant().toString() == "connected");
+void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isError()) {
+        QVariantMap values = reply.value();
+        UPDATE_PROPERTY(PropAddress, values);
+        UPDATE_PROPERTY(PropName, values);
+        UPDATE_PROPERTY(PropVendor, values);
+        UPDATE_PROPERTY(PropVendorSource, values);
+        UPDATE_PROPERTY(PropProduct, values);
+        UPDATE_PROPERTY(PropVersion, values);
+        UPDATE_PROPERTY(PropIcon, values);
+        UPDATE_PROPERTY(PropClassOfDevice, values);
+        UPDATE_PROPERTY(PropUuids, values);
+        UPDATE_PROPERTY(PropServices, values);
+        UPDATE_PROPERTY(PropPaired, values);
+        UPDATE_PROPERTY(PropConnected, values);
+        UPDATE_PROPERTY(PropTrusted, values);
+        UPDATE_PROPERTY(PropBlocked, values);
+        UPDATE_PROPERTY(PropAlias, values);
+        UPDATE_PROPERTY(PropNodes, values);
+        UPDATE_PROPERTY(PropAdapter, values);
+        UPDATE_PROPERTY(PropLegacyPairing, values);
+    }
+    call->deleteLater();
+
+    emit devicePropertiesChanged();
+
+    if (!m_ready) {
+        m_ready = true;
+        emit readyChanged();
     }
 }
 
-void BluetoothDevice::inputPropertiesChanged(QString name, QDBusVariant value)
+void BluetoothDevice::propertyChanged(QString name, QDBusVariant value)
 {
-    qDebug()<<"Input properties changed: "<<name<<" "<<value.variant();
-    if(name == "Connected")
-    {
-        emit inputConnectedChanged(value.variant().toBool());
+    QVariant variant = value.variant();
+    if (updateProperty(name, variant)) {
+        emit devicePropertiesChanged();
+        emit propertyChanged(name, variant);
+    }
+}
+
+void BluetoothDevice::audioPropertyChanged(QString name, QDBusVariant value)
+{
+    if (name == AudioPropState) {
+        AudioConnectionState newState = AudioStateUnknown;
+        QString stateString = value.variant().toString();
+        if (stateString == AudioPropStateConnecting) {
+            newState = AudioConnecting;
+        } else if (stateString == AudioPropStateConnected) {
+            newState = AudioConnected;
+        } else if (stateString == AudioPropStateDisconnecting) {
+            newState = AudioDisconnecting;
+        } else if (stateString == AudioPropStateDisconnected) {
+            newState = AudioDisconnected;
+        }
+        if (m_audioConnectionState != newState) {
+            m_audioConnectionState = newState;
+            emit audioConnectionStateChanged();
+            emit devicePropertiesChanged();
+        }
     }
 }
