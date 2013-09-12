@@ -110,4 +110,6 @@ private:
     bool m_ready;
 };
 
+Q_DECLARE_METATYPE(BluetoothDevice::AudioConnectionState)
+
 #endif // BLUETOOTHDEVICE_H
