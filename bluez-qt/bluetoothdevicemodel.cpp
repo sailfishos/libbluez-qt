@@ -237,7 +237,7 @@ void BluetoothDevicesModel::deviceCreated(QDBusObjectPath devicepath)
 	BluetoothDevice* device = new BluetoothDevice(devicepath,this);
 
 	updateConnected(device->connected());
-	connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
+    connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
 
 	beginInsertRows(QModelIndex(),m_devices.size(),m_devices.size());
 	m_devices.append(device);
