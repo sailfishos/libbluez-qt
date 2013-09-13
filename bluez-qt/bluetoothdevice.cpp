@@ -23,7 +23,7 @@ static const QLatin1String PropVendorSource("VendorSource");
 static const QLatin1String PropProduct("Product");
 static const QLatin1String PropVersion("Version");
 static const QLatin1String PropIcon("Icon");
-static const QLatin1String PropClassOfDevice("ClassOfDevice");
+static const QLatin1String PropClassOfDevice("Class");
 static const QLatin1String PropUuids("UUIDs");
 static const QLatin1String PropServices("Services");
 static const QLatin1String PropPaired("Paired");
