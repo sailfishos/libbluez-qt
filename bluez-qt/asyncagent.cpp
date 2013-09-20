@@ -9,6 +9,8 @@
  *
  */
 
+#include <QDBusPendingReply>
+
 #include "asyncagent.h"
 
 AsyncAgent::AsyncAgent(QString path, QObject *parent) :
@@ -23,15 +25,17 @@ void AsyncAgent::requestConfirmation(OrgBluezDeviceInterface &device, uint key)
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
+    deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()),this);
 
-	QVariantMap props = device.GetProperties();
+    QDBusPendingReply<QVariantMap> reply = device.GetProperties();
+    reply.waitForFinished();
+    QVariantMap props = reply.value();
 
-	QString alias = props["Alias"].toString();
-
-	deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()),this);
-
-	QMetaObject::invokeMethod(parent(),"requestConfirmation",
-							  Qt::QueuedConnection, Q_ARG(QString, alias), Q_ARG(uint,key));
+    QMetaObject::invokeMethod(parent(),"requestConfirmation", Qt::QueuedConnection,
+                              Q_ARG(QString, props["Address"].toString()),
+                              Q_ARG(uint, props["Class"].toUInt()),
+                              Q_ARG(QString, props["Alias"].toString()),
+                              Q_ARG(uint, key));
 
 	return;
 }
@@ -42,14 +46,16 @@ uint AsyncAgent::requestPasskey(OrgBluezDeviceInterface &device)
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
-
-	QVariantMap props = device.GetProperties();
-
-	QString alias = props["Alias"].toString();
-
 	deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()),this);
 
-	QMetaObject::invokeMethod(parent(), "requestPasskey", Qt::QueuedConnection, Q_ARG(QString, alias));
+    QDBusPendingReply<QVariantMap> reply = device.GetProperties();
+    reply.waitForFinished();
+    QVariantMap props = reply.value();
+
+    QMetaObject::invokeMethod(parent(), "requestPasskey", Qt::QueuedConnection,
+                              Q_ARG(QString, props["Address"].toString()),
+                              Q_ARG(uint, props["Class"].toUInt()),
+                              Q_ARG(QString, props["Alias"].toString()));
 
 	return 0;
 }
@@ -60,14 +66,16 @@ QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
+    deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()),this);
 
-	QVariantMap props = device.GetProperties();
+    QDBusPendingReply<QVariantMap> reply = device.GetProperties();
+    reply.waitForFinished();
+    QVariantMap props = reply.value();
 
-	QString alias = props["Alias"].toString();
-
-	deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()),this);
-
-	QMetaObject::invokeMethod(parent(), "requestPidCode", Qt::QueuedConnection, Q_ARG(QString, alias));
+    QMetaObject::invokeMethod(parent(), "requestPidCode", Qt::QueuedConnection,
+                              Q_ARG(QString, props["Address"].toString()),
+                              Q_ARG(uint, props["Class"].toUInt()),
+                              Q_ARG(QString, props["Alias"].toString()));
 
 	return "";
 }
