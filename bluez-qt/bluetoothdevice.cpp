@@ -63,10 +63,14 @@ void BluetoothDevice::init()
     m_device = 0;
     m_audio = 0;
     m_audioConnectionState = AudioStateUnknown;
-    m_ready = false;
     if (!m_objectPath.isEmpty()) {
         setPath(m_objectPath);
     }
+}
+
+bool BluetoothDevice::ready() const
+{
+    return !m_properties.isEmpty() && m_audioConnectionState != AudioStateUnknown;
 }
 
 QString BluetoothDevice::path() const
@@ -84,14 +88,19 @@ void BluetoothDevice::setPath(const QString &objectPath)
         connect(m_device, SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 SLOT(propertyChanged(QString,QDBusVariant)));
 
-        QDBusPendingReply<QVariantMap> result = m_device->GetProperties();
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                         SLOT(getPropertiesFinished(QDBusPendingCallWatcher*)));
+        QDBusPendingReply<QVariantMap> getPropsResult = m_device->GetProperties();
+        QDBusPendingCallWatcher *getPropsWatcher = new QDBusPendingCallWatcher(getPropsResult, this);
+        connect(getPropsWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(getPropertiesFinished(QDBusPendingCallWatcher*)));
 
         m_audio = new OrgBluezAudioInterface("org.bluez", m_objectPath, QDBusConnection::systemBus(), this);
         connect(m_audio, SIGNAL(PropertyChanged(QString,QDBusVariant)),
                 SLOT(audioPropertyChanged(QString,QDBusVariant)));
+
+        QDBusPendingReply<QVariantMap> getAudioPropsResult = m_audio->GetProperties();
+        QDBusPendingCallWatcher *getAudioPropsWatcher = new QDBusPendingCallWatcher(getAudioPropsResult, this);
+        connect(getAudioPropsWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(getAudioPropertiesFinished(QDBusPendingCallWatcher*)));
     }
 }
 
@@ -263,6 +272,8 @@ bool BluetoothDevice::updateProperty(const QString &name, const QVariant &value)
 
 void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
 {
+    bool wasReady = ready();
+
     QDBusPendingReply<QVariantMap> reply = *call;
     if (!reply.isError()) {
         QVariantMap values = reply.value();
@@ -289,8 +300,7 @@ void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
 
     emit devicePropertiesChanged();
 
-    if (!m_ready) {
-        m_ready = true;
+    if (wasReady != ready()) {
         emit readyChanged();
     }
 }
@@ -304,11 +314,34 @@ void BluetoothDevice::propertyChanged(QString name, QDBusVariant value)
     }
 }
 
+void BluetoothDevice::getAudioPropertiesFinished(QDBusPendingCallWatcher *call)
+{
+    bool wasReady = ready();
+
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isError()) {
+        QVariantMap values = reply.value();
+        Q_FOREACH(const QString &key, values.keys()) {
+            updateAudioProperty(key, values[key]);
+        }
+    }
+    call->deleteLater();
+
+    if (wasReady != ready()) {
+        emit readyChanged();
+    }
+}
+
 void BluetoothDevice::audioPropertyChanged(QString name, QDBusVariant value)
+{
+    updateAudioProperty(name, value.variant());
+}
+
+bool BluetoothDevice::updateAudioProperty(const QString &name, const QVariant &value)
 {
     if (name == AudioPropState) {
         AudioConnectionState newState = AudioStateUnknown;
-        QString stateString = value.variant().toString();
+        QString stateString = value.toString();
         if (stateString == AudioPropStateConnecting) {
             newState = AudioConnecting;
         } else if (stateString == AudioPropStateConnected) {

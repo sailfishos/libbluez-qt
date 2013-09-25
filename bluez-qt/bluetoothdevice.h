@@ -14,6 +14,7 @@ class BluetoothDevice : public QObject
 {
     Q_OBJECT
     Q_ENUMS(AudioConnectionState)
+    Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(AudioConnectionState audioConnectionState READ audioConnectionState NOTIFY audioConnectionStateChanged)
     Q_PROPERTY(QString address READ address NOTIFY addressChanged)
@@ -39,6 +40,8 @@ public:
     explicit BluetoothDevice(QObject *parent = 0);
     explicit BluetoothDevice(const QDBusObjectPath &path, QObject *parent = 0);
     ~BluetoothDevice();
+
+    bool ready() const;
 
     QString path() const;
     void setPath(const QString &path);
@@ -96,18 +99,19 @@ signals:
 private slots:
     void getPropertiesFinished(QDBusPendingCallWatcher *call);
     void propertyChanged(QString name, QDBusVariant value);
+    void getAudioPropertiesFinished(QDBusPendingCallWatcher *call);
     void audioPropertyChanged(QString name, QDBusVariant value);
 
 private:
     void init();
     bool updateProperty(const QString &name, const QVariant &value);
+    bool updateAudioProperty(const QString &name, const QVariant &value);
 
     OrgBluezDeviceInterface *m_device;
     OrgBluezAudioInterface *m_audio;
     QVariantMap m_properties;
     QString m_objectPath;
     AudioConnectionState m_audioConnectionState;
-    bool m_ready;
 };
 
 #endif // BLUETOOTHDEVICE_H
