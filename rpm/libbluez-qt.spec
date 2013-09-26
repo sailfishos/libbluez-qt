@@ -9,7 +9,7 @@ Name:       libbluez-qt
 # << macros
 
 Summary:    Library for accessing bluetooth functionality in Qt
-Version:    0.1.11
+Version:    0.1.12
 Release:    1
 Group:      System/GUI/Other
 License:    Apache License 2.0
