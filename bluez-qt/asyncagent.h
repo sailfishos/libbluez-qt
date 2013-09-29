@@ -23,6 +23,7 @@ public:
 
 	BluetoothDevice* device() { return deviceToPair; }
 
+	void authorize(OrgBluezDeviceInterface &device, QString uuid);
 	void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
 	uint requestPasskey(OrgBluezDeviceInterface &device);
 	QString requestPidCode(OrgBluezDeviceInterface &device);
@@ -34,6 +35,7 @@ public slots:
 	void replyRequestConfirmation(bool confirmed);
 	void replyPasskey(uint passkey);
 	void replyRequestPidCode(QString pidCode);
+	void replyRequestAuthorization(bool authorize);
 
 private:
 	QDBusMessage pendingMessage;

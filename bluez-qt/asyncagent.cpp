@@ -19,9 +19,39 @@ AsyncAgent::AsyncAgent(QString path, QObject *parent) :
 
 }
 
+void AsyncAgent::authorize(OrgBluezDeviceInterface &device, QString uuid)
+{
+    qDebug() << Q_FUNC_INFO;
+
+    QDBusPendingReply<QVariantMap> reply = device.GetProperties();
+    reply.waitForFinished();
+    QVariantMap props = reply.value();
+
+    bool paired = props.value(QStringLiteral("Paired")).toBool();
+    if (!paired) {
+        QDBusMessage reply = message().createErrorReply("org.bluez.Error.Rejected", "Remote device is not paired");
+        QDBusConnection::systemBus().send(reply);
+        return;
+    }
+
+    bool trusted = props.value(QStringLiteral("Trusted")).toBool();
+    if (!trusted) {
+        setDelayedReply(true);
+        pendingMessage = message();
+        m_connection = connection();
+        deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()), this);
+
+        QMetaObject::invokeMethod(parent(),"requestAuthorization", Qt::QueuedConnection,
+                                  Q_ARG(QString, props["Address"].toString()),
+                                  Q_ARG(uint, props["Class"].toUInt()),
+                                  Q_ARG(QString, props["Alias"].toString()),
+                                  Q_ARG(QString, uuid));
+    }
+}
+
 void AsyncAgent::requestConfirmation(OrgBluezDeviceInterface &device, uint key)
 {
-	qDebug("requestConfirmation");
+	qDebug() << Q_FUNC_INFO;
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
@@ -36,13 +66,11 @@ void AsyncAgent::requestConfirmation(OrgBluezDeviceInterface &device, uint key)
                               Q_ARG(uint, props["Class"].toUInt()),
                               Q_ARG(QString, props["Alias"].toString()),
                               Q_ARG(uint, key));
-
-	return;
 }
 
 uint AsyncAgent::requestPasskey(OrgBluezDeviceInterface &device)
 {
-	qDebug("requestKey");
+	qDebug() << Q_FUNC_INFO;
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
@@ -62,7 +90,7 @@ uint AsyncAgent::requestPasskey(OrgBluezDeviceInterface &device)
 
 QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 {
-	qDebug("requestPidCode");
+	qDebug() << Q_FUNC_INFO;
 	setDelayedReply(true);
 	pendingMessage = message();
 	m_connection = connection();
@@ -82,7 +110,7 @@ QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 
 void AsyncAgent::release()
 {
-	qDebug("releasing!");
+	qDebug() << Q_FUNC_INFO;
 	if (!QMetaObject::invokeMethod(parent(), "release", Qt::QueuedConnection))
 		qDebug("sending relay signal failed!!!");
 }
@@ -114,4 +142,15 @@ void AsyncAgent::replyRequestPidCode(QString pidCode)
 {
 	QDBusMessage reply = pendingMessage.createReply(pidCode);
 	m_connection.send(reply);
+}
+
+void AsyncAgent::replyRequestAuthorization(bool authorize)
+{
+    if (authorize) {
+        QDBusMessage reply = pendingMessage.createReply();
+        m_connection.send(reply);
+    } else {
+        QDBusMessage reply = pendingMessage.createErrorReply("org.bluez.Error.Rejected", "Device not authorized");
+        m_connection.send(reply);
+    }
 }
