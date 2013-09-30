@@ -28,7 +28,7 @@ void AsyncAgent::authorize(OrgBluezDeviceInterface &device, QString uuid)
     qDebug() << Q_FUNC_INFO;
     m_pendingAction = AuthorizeAction;
     m_requestAuthorizeUuid = uuid;
-    initializeDelayedReply(device);
+    initializeDelayedReply(QDBusObjectPath(device.path()));
 }
 
 void AsyncAgent::requestConfirmation(OrgBluezDeviceInterface &device, uint key)
@@ -36,14 +36,14 @@ void AsyncAgent::requestConfirmation(OrgBluezDeviceInterface &device, uint key)
     qDebug() << Q_FUNC_INFO;
     m_pendingAction = RequestConfirmationAction;
     m_confirmationRequestPasskey = key;
-    initializeDelayedReply(device);
+    initializeDelayedReply(QDBusObjectPath(device.path()));
 }
 
 uint AsyncAgent::requestPasskey(OrgBluezDeviceInterface &device)
 {
     qDebug() << Q_FUNC_INFO;
     m_pendingAction = RequestPasskeyAction;
-    initializeDelayedReply(device);
+    initializeDelayedReply(QDBusObjectPath(device.path()));
     return 0;
 }
 
@@ -51,7 +51,7 @@ QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 {
     qDebug() << Q_FUNC_INFO;
     m_pendingAction = RequestPidCodeAction;
-    initializeDelayedReply(device);
+    initializeDelayedReply(QDBusObjectPath(device.path()));
     return QString();
 }
 
@@ -98,116 +98,87 @@ void AsyncAgent::replyRequestAuthorization(bool authorize)
     }
 }
 
-void AsyncAgent::getDevicePropertiesFinished(QDBusPendingCallWatcher *call)
+void AsyncAgent::devicePropertiesChanged()
 {
-    QDBusPendingReply<QVariantMap> reply = *call;
-    QVariantMap deviceProperties = reply.value();
+    QObject::disconnect(m_deviceToPair, SIGNAL(devicePropertiesChanged()), this, SLOT(devicePropertiesChanged()));
+
     switch (m_pendingAction) {
     case InvalidAction:
         qWarning() << Q_FUNC_INFO << "called with invalid action";
         break;
     case AuthorizeAction:
-        notifyAuthorizeRequest(deviceProperties);
+        notifyAuthorizeRequest();
         break;
     case RequestConfirmationAction:
-        notifyConfirmationRequest(deviceProperties);
+        notifyConfirmationRequest();
         break;
     case RequestPasskeyAction:
-        notifyPasskeyRequest(deviceProperties);
+        notifyPasskeyRequest();
         break;
     case RequestPidCodeAction:
-        notifyPidCodeRequest(deviceProperties);
+        notifyPidCodeRequest();
         break;
     }
     m_pendingAction = InvalidAction;
-    call->deleteLater();
 }
 
-void AsyncAgent::initializeDelayedReply(OrgBluezDeviceInterface &device)
+void AsyncAgent::initializeDelayedReply(const QDBusObjectPath &path)
 {
     setDelayedReply(true);
     m_pendingMessage = message();
     m_connection = connection();
-    m_deviceToPair = new BluetoothDevice(QDBusObjectPath(device.path()), this);
-
-    QDBusPendingReply<QVariantMap> result = device.GetProperties();
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(result, this);
-    connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
-                     SLOT(getDevicePropertiesFinished(QDBusPendingCallWatcher*)));
+    m_deviceToPair = new BluetoothDevice(path, this);
+    QObject::connect(m_deviceToPair, SIGNAL(devicePropertiesChanged()), this, SLOT(devicePropertiesChanged()));
 }
 
-void AsyncAgent::notifyAuthorizeRequest(const QVariantMap &deviceProperties)
+void AsyncAgent::notifyAuthorizeRequest()
 {
-    if (sendErrorIfNoProperties(deviceProperties)) {
-        return;
-    }
-    bool paired = deviceProperties["Paired"].toBool();
-    if (!paired) {
+    if (!m_deviceToPair->paired()) {
         QDBusMessage reply = m_pendingMessage.createErrorReply("org.bluez.Error.Rejected", "Remote device is not paired");
         m_connection.send(reply);
         return;
     }
-    bool trusted = deviceProperties["Trusted"].toBool();
-    if (trusted) {
+    if (m_deviceToPair->trusted()) {
         QDBusMessage reply = m_pendingMessage.createReply();
         QDBusConnection::systemBus().send(reply);
     } else {
         QMetaObject::invokeMethod(parent(),
                                   "requestAuthorization",
                                   Qt::QueuedConnection,
-                                  Q_ARG(QString, deviceProperties["Address"].toString()),
-                                  Q_ARG(uint, deviceProperties["Class"].toUInt()),
-                                  Q_ARG(QString, deviceProperties["Alias"].toString()),
+                                  Q_ARG(QString, m_deviceToPair->address()),
+                                  Q_ARG(uint, uint(m_deviceToPair->classOfDevice())),
+                                  Q_ARG(QString, m_deviceToPair->alias()),
                                   Q_ARG(QString, m_requestAuthorizeUuid));
     }
 }
 
-void AsyncAgent::notifyConfirmationRequest(const QVariantMap &deviceProperties)
+void AsyncAgent::notifyConfirmationRequest()
 {
-    if (sendErrorIfNoProperties(deviceProperties)) {
-        return;
-    }
     QMetaObject::invokeMethod(parent(),
                               "requestConfirmation",
                               Qt::QueuedConnection,
-                              Q_ARG(QString, deviceProperties["Address"].toString()),
-                              Q_ARG(uint, deviceProperties["Class"].toUInt()),
-                              Q_ARG(QString, deviceProperties["Alias"].toString()),
+                              Q_ARG(QString, m_deviceToPair->address()),
+                              Q_ARG(uint, uint(m_deviceToPair->classOfDevice())),
+                              Q_ARG(QString, m_deviceToPair->alias()),
                               Q_ARG(uint, m_confirmationRequestPasskey));
 }
 
-void AsyncAgent::notifyPasskeyRequest(const QVariantMap &deviceProperties)
+void AsyncAgent::notifyPasskeyRequest()
 {
-    if (sendErrorIfNoProperties(deviceProperties)) {
-        return;
-    }
     QMetaObject::invokeMethod(parent(),
                               "requestPasskey",
                               Qt::QueuedConnection,
-                              Q_ARG(QString, deviceProperties["Address"].toString()),
-                              Q_ARG(uint, deviceProperties["Class"].toUInt()),
-                              Q_ARG(QString, deviceProperties["Alias"].toString()));
+                              Q_ARG(QString, m_deviceToPair->address()),
+                              Q_ARG(uint, uint(m_deviceToPair->classOfDevice())),
+                              Q_ARG(QString, m_deviceToPair->alias()));
 }
 
-void AsyncAgent::notifyPidCodeRequest(const QVariantMap &deviceProperties)
+void AsyncAgent::notifyPidCodeRequest()
 {
-    if (sendErrorIfNoProperties(deviceProperties)) {
-        return;
-    }
     QMetaObject::invokeMethod(parent(),
                               "requestPidCode",
                               Qt::QueuedConnection,
-                              Q_ARG(QString, deviceProperties["Address"].toString()),
-                              Q_ARG(uint, deviceProperties["Class"].toUInt()),
-                              Q_ARG(QString, deviceProperties["Alias"].toString()));
-}
-
-bool AsyncAgent::sendErrorIfNoProperties(const QVariantMap &deviceProperties)
-{
-    if (deviceProperties.isEmpty()) {
-        QDBusMessage reply = m_pendingMessage.createErrorReply("org.bluez.Error.Rejected", "Unable to read remote device information");
-        m_connection.send(reply);
-        return true;
-    }
-    return false;
+                              Q_ARG(QString, m_deviceToPair->address()),
+                              Q_ARG(uint, uint(m_deviceToPair->classOfDevice())),
+                              Q_ARG(QString, m_deviceToPair->alias()));
 }
