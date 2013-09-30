@@ -12,9 +12,10 @@
 #ifndef ASYNCAGENT_H
 #define ASYNCAGENT_H
 
-class BluetoothDevice;
-
 #include "bluetoothbaseagent.h"
+
+class BluetoothDevice;
+class QDBusObjectPath;
 
 class AsyncAgent : public BluetoothBaseAgent
 {
@@ -37,7 +38,7 @@ public slots:
     void replyRequestAuthorization(bool authorize);
 
 private slots:
-    void getDevicePropertiesFinished(QDBusPendingCallWatcher *call);
+    void devicePropertiesChanged();
 
 private:
     enum Action {
@@ -48,12 +49,11 @@ private:
         RequestPidCodeAction
     };
 
-    void initializeDelayedReply(OrgBluezDeviceInterface &device);
-    void notifyAuthorizeRequest(const QVariantMap &deviceProperties);
-    void notifyConfirmationRequest(const QVariantMap &deviceProperties);
-    void notifyPasskeyRequest(const QVariantMap &deviceProperties);
-    void notifyPidCodeRequest(const QVariantMap &deviceProperties);
-    bool sendErrorIfNoProperties(const QVariantMap &deviceProperties);
+    void initializeDelayedReply(const QDBusObjectPath &path);
+    void notifyAuthorizeRequest();
+    void notifyConfirmationRequest();
+    void notifyPasskeyRequest();
+    void notifyPidCodeRequest();
 
     BluetoothDevice* m_deviceToPair;
     QDBusMessage m_pendingMessage;
