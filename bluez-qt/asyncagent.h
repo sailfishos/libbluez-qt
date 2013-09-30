@@ -20,21 +20,21 @@ class AsyncAgent : public BluetoothBaseAgent
 {
     Q_OBJECT
 public:
-	explicit AsyncAgent(QString path, QObject *parent = 0);
+    explicit AsyncAgent(QString path, QObject *parent = 0);
 
     BluetoothDevice* device() { return m_deviceToPair; }
 
-	void authorize(OrgBluezDeviceInterface &device, QString uuid);
-	void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
-	uint requestPasskey(OrgBluezDeviceInterface &device);
-	QString requestPidCode(OrgBluezDeviceInterface &device);
-	void release();
+    void authorize(OrgBluezDeviceInterface &device, QString uuid);
+    void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
+    uint requestPasskey(OrgBluezDeviceInterface &device);
+    QString requestPidCode(OrgBluezDeviceInterface &device);
+    void release();
 
 public slots:
-	void replyRequestConfirmation(bool confirmed);
-	void replyPasskey(uint passkey);
-	void replyRequestPidCode(QString pidCode);
-	void replyRequestAuthorization(bool authorize);
+    void replyRequestConfirmation(bool confirmed);
+    void replyPasskey(uint passkey);
+    void replyRequestPidCode(QString pidCode);
+    void replyRequestAuthorization(bool authorize);
 
 private slots:
     void getDevicePropertiesFinished(QDBusPendingCallWatcher *call);

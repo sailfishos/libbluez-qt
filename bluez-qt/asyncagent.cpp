@@ -57,25 +57,22 @@ QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 
 void AsyncAgent::release()
 {
-	qDebug() << Q_FUNC_INFO;
-	if (!QMetaObject::invokeMethod(parent(), "release", Qt::QueuedConnection))
-		qDebug("sending relay signal failed!!!");
+    qDebug() << Q_FUNC_INFO;
+    if (!QMetaObject::invokeMethod(parent(), "release", Qt::QueuedConnection))
+        qDebug("sending relay signal failed!!!");
 }
 
 void AsyncAgent::replyRequestConfirmation(bool confirmed)
 {
-	if(!confirmed)
-	{
-		qDebug("rejecting");
-		QDBusMessage reply = m_pendingMessage.createErrorReply("org.bluez.Error.Rejected", "The request was rejected");
-		m_connection.send(reply);
-	}
-	else
-	{
-		qDebug("accepting");
-		QDBusMessage reply = m_pendingMessage.createReply();
-		m_connection.send(reply);
-	}
+    if (!confirmed) {
+        qDebug("rejecting");
+        QDBusMessage reply = m_pendingMessage.createErrorReply("org.bluez.Error.Rejected", "The request was rejected");
+        m_connection.send(reply);
+    } else {
+        qDebug("accepting");
+        QDBusMessage reply = m_pendingMessage.createReply();
+        m_connection.send(reply);
+    }
 }
 
 void AsyncAgent::replyPasskey(uint passkey)
