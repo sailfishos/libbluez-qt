@@ -337,7 +337,7 @@ void BluetoothDevice::audioPropertyChanged(QString name, QDBusVariant value)
     updateAudioProperty(name, value.variant());
 }
 
-bool BluetoothDevice::updateAudioProperty(const QString &name, const QVariant &value)
+void BluetoothDevice::updateAudioProperty(const QString &name, const QVariant &value)
 {
     if (name == AudioPropState) {
         AudioConnectionState newState = AudioStateUnknown;

@@ -105,7 +105,7 @@ private slots:
 private:
     void init();
     bool updateProperty(const QString &name, const QVariant &value);
-    bool updateAudioProperty(const QString &name, const QVariant &value);
+    void updateAudioProperty(const QString &name, const QVariant &value);
 
     OrgBluezDeviceInterface *m_device;
     OrgBluezAudioInterface *m_audio;
