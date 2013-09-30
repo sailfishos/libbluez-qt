@@ -12,8 +12,9 @@
 #ifndef ASYNCAGENT_H
 #define ASYNCAGENT_H
 
+class BluetoothDevice;
+
 #include "bluetoothbaseagent.h"
-#include "bluetoothdevice.h"
 
 class AsyncAgent : public BluetoothBaseAgent
 {
@@ -21,7 +22,7 @@ class AsyncAgent : public BluetoothBaseAgent
 public:
 	explicit AsyncAgent(QString path, QObject *parent = 0);
 
-	BluetoothDevice* device() { return deviceToPair; }
+    BluetoothDevice* device() { return m_deviceToPair; }
 
 	void authorize(OrgBluezDeviceInterface &device, QString uuid);
 	void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
@@ -29,20 +30,37 @@ public:
 	QString requestPidCode(OrgBluezDeviceInterface &device);
 	void release();
 
-signals:
-
 public slots:
 	void replyRequestConfirmation(bool confirmed);
 	void replyPasskey(uint passkey);
 	void replyRequestPidCode(QString pidCode);
 	void replyRequestAuthorization(bool authorize);
 
+private slots:
+    void getDevicePropertiesFinished(QDBusPendingCallWatcher *call);
+
 private:
-	QDBusMessage pendingMessage;
-	QDBusConnection m_connection;
+    enum Action {
+        InvalidAction,
+        AuthorizeAction,
+        RequestConfirmationAction,
+        RequestPasskeyAction,
+        RequestPidCodeAction
+    };
 
-	BluetoothDevice* deviceToPair;
+    void initializeDelayedReply(OrgBluezDeviceInterface &device);
+    void notifyAuthorizeRequest(const QVariantMap &deviceProperties);
+    void notifyConfirmationRequest(const QVariantMap &deviceProperties);
+    void notifyPasskeyRequest(const QVariantMap &deviceProperties);
+    void notifyPidCodeRequest(const QVariantMap &deviceProperties);
+    bool sendErrorIfNoProperties(const QVariantMap &deviceProperties);
 
+    BluetoothDevice* m_deviceToPair;
+    QDBusMessage m_pendingMessage;
+    QDBusConnection m_connection;
+    Action m_pendingAction;
+    QString m_requestAuthorizeUuid;
+    uint m_confirmationRequestPasskey;
 };
 
 #endif // ASYNCAGENT_H
