@@ -19,9 +19,9 @@ NearbyDevicesModel::NearbyDevicesModel(QObject *parent) :
 			"org.bluez",
 			"/", QDBusConnection::systemBus(), this);
 
-	connect(manager,SIGNAL(AdapterAdded(QDBusObjectPath)),this,SLOT(adapterAdded(QDBusObjectPath)));
+	connect(manager,SIGNAL(DefaultAdapterChanged(QDBusObjectPath)),this,SLOT(defaultAdapterChanged(QDBusObjectPath)));
 	connect(manager,SIGNAL(AdapterRemoved(QDBusObjectPath)),this,SLOT(adapterRemoved(QDBusObjectPath)));
-	adapterAdded(QDBusObjectPath());
+	defaultAdapterChanged(manager->DefaultAdapter());
 
 	QMetaObject properties = NearbyItem::staticMetaObject;
 	for(int i=0; i<properties.propertyCount();i++)
@@ -94,10 +94,14 @@ void NearbyDevicesModel::discover(bool start)
 
 void NearbyDevicesModel::removeAll(bool)
 {
-	for(int i=0;i<devices.size();i++)
+	beginRemoveRows(QModelIndex(), 0, devices.size()-1);
+	while(!devices.isEmpty())
 	{
-		devices.removeAt(i);
+		NearbyItem *item = devices.takeFirst();
+		emit nearbyDeviceRemoved(0);
+		delete item;
 	}
+	endRemoveRows();
 }
 
 void NearbyDevicesModel::replyRequestConfirmation(bool confirmed)
@@ -118,12 +122,11 @@ void NearbyDevicesModel::replyRequestPidCode(QString pidCode)
 
 void NearbyDevicesModel::setAdapterProperty(QString name, QVariant value)
 {
-	if(adapter) adapter->setProperty(name.toLatin1().data(),value);
+	if(adapter) adapter->SetProperty(name.toLatin1().data(),QDBusVariant(value));
 }
 
 void NearbyDevicesModel::deviceCreated(QString hwaddy, QVariantMap properties)
 {
-	bool found = false;
 	foreach(NearbyItem* path, devices)
 	{
 		if(path->address() == hwaddy)
@@ -162,25 +165,31 @@ void NearbyDevicesModel::deviceRemoved(QString hwaddy)
 			qDebug()<<"device "<<device->name()<<" has disappeared";
 			int i=devices.indexOf(device);
 			beginRemoveRows(QModelIndex(),i,i);
-			devices.removeAt(i);
+			NearbyItem *item = devices.takeAt(i);
 			emit nearbyDeviceRemoved(i);
 			endRemoveRows();
+			delete item;
 		}
 	}
 }
 
-void NearbyDevicesModel::adapterAdded(QDBusObjectPath path)
+void NearbyDevicesModel::defaultAdapterChanged(QDBusObjectPath path)
 {
 	if(adapter && adapter->path() == path.path()) return;
 
-	QDBusObjectPath adapterpath = manager->DefaultAdapter();
+	if (adapter)
+	{
+		removeAll(true);
+		delete adapter;
+		adapter = NULL;
+	}
 
-	if(adapterpath.path() == "")
+	if(path.path() == "")
 		return;
 
 	adapter = new OrgBluezAdapterInterface(
 			"org.bluez",
-			adapterpath.path(),
+			path.path(),
 			QDBusConnection::systemBus(), this);
 
 	connect(adapter,
@@ -195,6 +204,17 @@ void NearbyDevicesModel::adapterAdded(QDBusObjectPath path)
 			SIGNAL(PropertyChanged(QString,QDBusVariant)),
 			this,
 			SLOT(adapterPropertiesChangedSlot(QString,QDBusVariant)));
+
+	QList<QDBusObjectPath> list = adapter->ListDevices();
+	foreach(QDBusObjectPath item, list)
+	{
+		OrgBluezDeviceInterface device(
+				"org.bluez",
+				item.path(),
+				QDBusConnection::systemBus(), this);
+		QVariantMap properties = device.GetProperties();
+		deviceCreated(properties["Address"].toString(), properties);
+	}
 }
 
 void NearbyDevicesModel::adapterRemoved(QDBusObjectPath)

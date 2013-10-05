@@ -1,0 +1,17 @@
+# qdbusxml2cpp generated files
+/audio.cpp
+/audio.h
+/audiosink.cpp
+/audiosink.h
+/audiosource.cpp
+/audiosource.h
+/blueadapter.cpp
+/blueadapter.h
+/bluedevice.cpp
+/bluedevice.h
+/bluemanager.cpp
+/bluemanager.h
+/headset.cpp
+/headset.h
+/input.cpp
+/input.h

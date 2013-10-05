@@ -114,4 +114,6 @@ private:
     AudioConnectionState m_audioConnectionState;
 };
 
+Q_DECLARE_METATYPE(BluetoothDevice::AudioConnectionState)
+
 #endif // BLUETOOTHDEVICE_H
