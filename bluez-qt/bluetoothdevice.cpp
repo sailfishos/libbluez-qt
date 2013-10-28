@@ -12,6 +12,7 @@
 #include "bluetoothdevice.h"
 #include "bluedevice.h"
 #include "audio.h"
+#include "headset.h"
 
 #include <QDBusPendingReply>
 #include <QDBusPendingCallWatcher>
@@ -36,6 +37,7 @@ static const QLatin1String PropAdapter("Adapter");
 static const QLatin1String PropLegacyPairing("LegacyPairing");
 
 static const QLatin1String AudioPropState("State");
+static const QLatin1String AudioPropPlaying("Playing");
 static const QLatin1String AudioPropStateConnecting("connecting");
 static const QLatin1String AudioPropStateConnected("connected");
 static const QLatin1String AudioPropStateDisconnecting("disconnecting");
@@ -62,7 +64,9 @@ void BluetoothDevice::init()
 {
     m_device = 0;
     m_audio = 0;
+    m_headset = 0;
     m_audioConnectionState = AudioStateUnknown;
+    m_audioPlayingState = false;
     if (!m_objectPath.isEmpty()) {
         setPath(m_objectPath);
     }
@@ -107,6 +111,11 @@ void BluetoothDevice::setPath(const QString &objectPath)
 BluetoothDevice::AudioConnectionState BluetoothDevice::audioConnectionState() const
 {
     return m_audioConnectionState;
+}
+
+bool BluetoothDevice::audioPlayingState() const
+{
+    return m_audioPlayingState;
 }
 
 QString BluetoothDevice::address() const
@@ -303,6 +312,20 @@ void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
     if (wasReady != ready()) {
         emit readyChanged();
     }
+
+    // If class of device is major type of audio device, then follow
+    // device state changes.
+    if (!m_headset && (classOfDevice() & 0x1f00) >> 8 == 4) {
+        m_headset = new OrgBluezHeadsetInterface("org.bluez", m_objectPath, QDBusConnection::systemBus(), this);
+        connect(m_headset, SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                SLOT(headsetPropertyChanged(QString,QDBusVariant)));
+
+        QDBusPendingReply<bool> getIsPlayingResult = m_headset->IsPlaying();
+        QDBusPendingCallWatcher *getIsPlayingWatcher = new QDBusPendingCallWatcher(getIsPlayingResult, this);
+        connect(getIsPlayingWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+                SLOT(getIsPlayingFinished(QDBusPendingCallWatcher*)));
+
+    }
 }
 
 void BluetoothDevice::propertyChanged(QString name, QDBusVariant value)
@@ -337,6 +360,11 @@ void BluetoothDevice::audioPropertyChanged(QString name, QDBusVariant value)
     updateAudioProperty(name, value.variant());
 }
 
+void BluetoothDevice::headsetPropertyChanged(QString name, QDBusVariant value)
+{
+    updateHeadsetProperty(name, value.variant());
+}
+
 void BluetoothDevice::updateAudioProperty(const QString &name, const QVariant &value)
 {
     if (name == AudioPropState) {
@@ -356,5 +384,24 @@ void BluetoothDevice::updateAudioProperty(const QString &name, const QVariant &v
             emit audioConnectionStateChanged();
             emit devicePropertiesChanged();
         }
+    }
+}
+
+void BluetoothDevice::getIsPlayingFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<bool> reply = *call;
+    if (!reply.isError() && m_audioPlayingState != reply.value()) {
+        m_audioPlayingState = reply.value();
+        emit audioPlayingStateChanged(m_audioPlayingState);
+    }
+
+    call->deleteLater();
+}
+
+void BluetoothDevice::updateHeadsetProperty(const QString &name, const QVariant &value)
+{
+    if (name == AudioPropPlaying && m_audioPlayingState != value.toBool()) {
+        m_audioPlayingState = value.toBool();
+        emit audioPlayingStateChanged(m_audioPlayingState);
     }
 }

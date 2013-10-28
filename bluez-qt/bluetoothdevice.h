@@ -7,6 +7,7 @@
 
 class OrgBluezDeviceInterface;
 class OrgBluezAudioInterface;
+class OrgBluezHeadsetInterface;
 class QDBusPendingCallWatcher;
 class QDBusObjectPath;
 
@@ -47,6 +48,7 @@ public:
     void setPath(const QString &path);
 
     AudioConnectionState audioConnectionState() const;
+    bool audioPlayingState() const;
 
     QString address() const;
 
@@ -84,6 +86,7 @@ signals:
     void readyChanged();
     void pathChanged();
     void audioConnectionStateChanged();
+    void audioPlayingStateChanged(bool playing);
 
     void addressChanged();
     void nameChanged();
@@ -101,17 +104,22 @@ private slots:
     void propertyChanged(QString name, QDBusVariant value);
     void getAudioPropertiesFinished(QDBusPendingCallWatcher *call);
     void audioPropertyChanged(QString name, QDBusVariant value);
+    void getIsPlayingFinished(QDBusPendingCallWatcher *call);
+    void headsetPropertyChanged(QString name, QDBusVariant value);
 
 private:
     void init();
     bool updateProperty(const QString &name, const QVariant &value);
     void updateAudioProperty(const QString &name, const QVariant &value);
+    void updateHeadsetProperty(const QString &name, const QVariant &value);
 
     OrgBluezDeviceInterface *m_device;
     OrgBluezAudioInterface *m_audio;
+    OrgBluezHeadsetInterface *m_headset;
     QVariantMap m_properties;
     QString m_objectPath;
     AudioConnectionState m_audioConnectionState;
+    bool m_audioPlayingState;
 };
 
 Q_DECLARE_METATYPE(BluetoothDevice::AudioConnectionState)
