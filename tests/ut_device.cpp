@@ -65,10 +65,10 @@ void UtDevice::init()
     Q_ASSERT(reply.isValid());
 
     m_adapter0device2 = new BluetoothDevice(QDBusObjectPath("/adapter0/device2"));
-    QVERIFY(waitForSignal(m_adapter0device2, SIGNAL(readyChanged())));
+    QVERIFY(m_adapter0device2->ready() || waitForSignal(m_adapter0device2, SIGNAL(readyChanged())));
 
     m_adapter0device4 = new BluetoothDevice(QDBusObjectPath("/adapter0/device4"));
-    QVERIFY(waitForSignal(m_adapter0device4, SIGNAL(readyChanged())));
+    QVERIFY(m_adapter0device4->ready() || waitForSignal(m_adapter0device4, SIGNAL(readyChanged())));
 }
 
 void UtDevice::cleanupTestCase()
@@ -165,18 +165,6 @@ void UtDevice::testAudio()
 
     QDBusInterface audio(SERVICE, "/adapter0/device2", AUDIO_INTERFACE, bus());
 
-    // Reset audio to disconnected state
-    {
-        m_adapter0device2->disconnectAudio();
-
-        QDBusReply<QVariantMap> reply = audio.call("GetProperties");
-        Q_ASSERT(reply.isValid());
-        QCOMPARE(reply.value().value("State"), QVariant("disconnected"));
-
-        QVERIFY(waitForSignal(m_adapter0device2, SIGNAL(devicePropertiesChanged())));
-        QCOMPARE(m_adapter0device2->audioConnectionState(), BluetoothDevice::AudioDisconnected);
-    }
-
     SignalSpy propertyChangedSpy(&audio, SIGNAL(PropertyChanged(QString,QDBusVariant)));
     SignalSpy connectedChangedSpy(m_adapter0device2, SIGNAL(audioConnectionStateChanged()));
 
@@ -191,6 +179,21 @@ void UtDevice::testAudio()
     QCOMPARE(connectedChangedSpy.count(), 1);
 
     QCOMPARE(m_adapter0device2->audioConnectionState(), BluetoothDevice::AudioConnected);
+
+    propertyChangedSpy.clear();
+    connectedChangedSpy.clear();
+
+    m_adapter0device2->disconnectAudio();
+
+    QVERIFY(waitForSignal(&propertyChangedSpy));
+    QCOMPARE(propertyChangedSpy.count(), 1);
+    QCOMPARE(propertyChangedSpy.at(0).at(0), QVariant("State"));
+    QCOMPARE(propertyChangedSpy.at(0).at(1).value<QDBusVariant>().variant(), QVariant("disconnected"));
+
+    QVERIFY(waitForSignal(&connectedChangedSpy));
+    QCOMPARE(connectedChangedSpy.count(), 1);
+
+    QCOMPARE(m_adapter0device2->audioConnectionState(), BluetoothDevice::AudioDisconnected);
 }
 
 QString UtDevice::deviceDBusProperty2QtProperty(QString property)

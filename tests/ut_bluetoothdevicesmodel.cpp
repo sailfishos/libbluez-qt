@@ -12,7 +12,8 @@ class UtBluetoothDevicesModel : public BluezTestBase
 public:
     // see BluetoothDevicesModel::m_roleNames
     enum DisplayRole {
-        RolePath = 1,
+        RoleReady = 1,
+        RolePath,
         RoleAudioConnectionState,
         RoleAddress,
         RoleName,
@@ -357,6 +358,7 @@ void UtBluetoothDevicesModel::testCreateDevice()
         ? BluetoothDevice::AudioConnected
         : BluetoothDevice::AudioDisconnected;
 
+    QCOMPARE(m_model->data(index, RoleReady               ), QVariant(true));
     QCOMPARE(m_model->data(index, RolePath                ), QVariant(devicePath));
     QCOMPARE(m_model->data(index, RoleAudioConnectionState),
             QVariant::fromValue(audioConnectionState));
