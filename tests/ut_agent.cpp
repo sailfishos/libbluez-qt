@@ -40,9 +40,10 @@ public:
     AgentRelay(QObject *parent) : QObject(parent) {}
 
 signals:
-    void requestConfirmation(const QString &deviceAlias, uint key);
-    void requestPasskey(const QString &deviceAlias);
-    void requestPidCode(const QString &deviceAlias);
+    void requestConfirmation(const QString &deviceAddress, uint deviceClass,
+            const QString &deviceAlias, uint key);
+    void requestPasskey(const QString &deviceAddress, uint deviceClass, const QString &deviceAlias);
+    void requestPidCode(const QString &deviceAddress, uint deviceClass, const QString &deviceAlias);
 };
 
 } // namespace Tests
@@ -97,7 +98,8 @@ void UtAgent::testRequestConfirmation()
 
     QDBusInterface adapter(SERVICE, "/adapter0", ADAPTER_INTERFACE, bus());
 
-    SignalSpy requestConfirmationSpy(m_agentRelay, SIGNAL(requestConfirmation(QString,uint)));
+    SignalSpy requestConfirmationSpy(m_agentRelay,
+            SIGNAL(requestConfirmation(QString,uint,QString,uint)));
 
     QDBusPendingReply<bool> reply = adapter.asyncCall("mock_requestConfirmation",
             QVariant::fromValue(QDBusObjectPath("/adapter0/device2")), 42u);
@@ -105,8 +107,10 @@ void UtAgent::testRequestConfirmation()
 
     QVERIFY(waitForSignal(&requestConfirmationSpy));
     QCOMPARE(requestConfirmationSpy.count(), 1);
-    QCOMPARE(requestConfirmationSpy.at(0).at(0), adapter0device2InitialProperties().value("Alias"));
-    QCOMPARE(requestConfirmationSpy.at(0).at(1), QVariant(42u));
+    QCOMPARE(requestConfirmationSpy.at(0).at(0), adapter0device2InitialProperties().value("Address"));
+    QCOMPARE(requestConfirmationSpy.at(0).at(1), adapter0device2InitialProperties().value("Class"));
+    QCOMPARE(requestConfirmationSpy.at(0).at(2), adapter0device2InitialProperties().value("Alias"));
+    QCOMPARE(requestConfirmationSpy.at(0).at(3), QVariant(42u));
 
     m_agent->replyRequestConfirmation(accept);
 
@@ -119,7 +123,7 @@ void UtAgent::testRequestPasskey()
 {
     QDBusInterface adapter(SERVICE, "/adapter0", ADAPTER_INTERFACE, bus());
 
-    SignalSpy requestPasskeySpy(m_agentRelay, SIGNAL(requestPasskey(QString)));
+    SignalSpy requestPasskeySpy(m_agentRelay, SIGNAL(requestPasskey(QString,uint,QString)));
 
     QDBusPendingReply<uint> reply = adapter.asyncCall("mock_requestPasskey",
             QVariant::fromValue(QDBusObjectPath("/adapter0/device2")));
@@ -127,7 +131,9 @@ void UtAgent::testRequestPasskey()
 
     QVERIFY(waitForSignal(&requestPasskeySpy));
     QCOMPARE(requestPasskeySpy.count(), 1);
-    QCOMPARE(requestPasskeySpy.at(0).at(0), adapter0device2InitialProperties().value("Alias"));
+    QCOMPARE(requestPasskeySpy.at(0).at(0), adapter0device2InitialProperties().value("Address"));
+    QCOMPARE(requestPasskeySpy.at(0).at(1), adapter0device2InitialProperties().value("Class"));
+    QCOMPARE(requestPasskeySpy.at(0).at(2), adapter0device2InitialProperties().value("Alias"));
 
     m_agent->replyPasskey(42);
 
@@ -140,7 +146,7 @@ void UtAgent::testRequestPinCode()
 {
     QDBusInterface adapter(SERVICE, "/adapter0", ADAPTER_INTERFACE, bus());
 
-    SignalSpy requestPinCodeSpy(m_agentRelay, SIGNAL(requestPidCode(QString)));
+    SignalSpy requestPinCodeSpy(m_agentRelay, SIGNAL(requestPidCode(QString,uint,QString)));
 
     QDBusPendingReply<QString> reply = adapter.asyncCall("mock_requestPinCode",
             QVariant::fromValue(QDBusObjectPath("/adapter0/device2")));
@@ -148,7 +154,9 @@ void UtAgent::testRequestPinCode()
 
     QVERIFY(waitForSignal(&requestPinCodeSpy));
     QCOMPARE(requestPinCodeSpy.count(), 1);
-    QCOMPARE(requestPinCodeSpy.at(0).at(0), adapter0device2InitialProperties().value("Alias"));
+    QCOMPARE(requestPinCodeSpy.at(0).at(0), adapter0device2InitialProperties().value("Address"));
+    QCOMPARE(requestPinCodeSpy.at(0).at(1), adapter0device2InitialProperties().value("Class"));
+    QCOMPARE(requestPinCodeSpy.at(0).at(2), adapter0device2InitialProperties().value("Alias"));
 
     m_agent->replyRequestPidCode("secret");
 
