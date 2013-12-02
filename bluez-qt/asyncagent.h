@@ -26,6 +26,7 @@ public:
     BluetoothDevice* device() { return m_deviceToPair; }
 
     void authorize(OrgBluezDeviceInterface &device, QString uuid);
+    void displayPasskey(OrgBluezDeviceInterface &device, uint passkey);
     void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
     uint requestPasskey(OrgBluezDeviceInterface &device);
     QString requestPidCode(OrgBluezDeviceInterface &device);
@@ -46,7 +47,8 @@ private:
         AuthorizeAction,
         RequestConfirmationAction,
         RequestPasskeyAction,
-        RequestPidCodeAction
+        RequestPidCodeAction,
+        DisplayPasskeyAction
     };
 
     void initializeDelayedReply(const QDBusObjectPath &path);
@@ -54,6 +56,7 @@ private:
     void notifyConfirmationRequest();
     void notifyPasskeyRequest();
     void notifyPidCodeRequest();
+    void notifyPasskeyDisplay();
 
     BluetoothDevice* m_deviceToPair;
     QDBusMessage m_pendingMessage;
@@ -61,6 +64,7 @@ private:
     Action m_pendingAction;
     QString m_requestAuthorizeUuid;
     uint m_confirmationRequestPasskey;
+    uint m_displayPasskey;
 };
 
 #endif // ASYNCAGENT_H

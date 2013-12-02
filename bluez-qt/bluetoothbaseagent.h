@@ -29,7 +29,7 @@ public slots:
 		sendErrorReply("org.bluez.Error.Canceled","The request was canceled");
 	}
 	virtual void confirmModeChange(QString);
-	virtual void displayPasskey(OrgBluezDeviceInterface &device, uint key, uint entered);
+	virtual void displayPasskey(OrgBluezDeviceInterface &device, uint key);
 	virtual void release();
 	virtual void requestConfirmation(OrgBluezDeviceInterface &device, uint key);
 	virtual uint requestPasskey(OrgBluezDeviceInterface &device);

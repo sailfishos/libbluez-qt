@@ -54,7 +54,7 @@ void BluetoothAgentAdaptor::ConfirmModeChange(const QString &mode)
 	agent->confirmModeChange(mode);
 }
 
-void BluetoothAgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint passkey, uint entered)
+void BluetoothAgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, uint passkey)
 {
 	if(!agent)
 	{
@@ -63,7 +63,7 @@ void BluetoothAgentAdaptor::DisplayPasskey(const QDBusObjectPath &deviceObject, 
 
 	OrgBluezDeviceInterface device("org.bluez", deviceObject.path(), QDBusConnection::systemBus());
 
-	agent->displayPasskey(device, passkey, entered);
+	agent->displayPasskey(device, passkey);
 }
 
 void BluetoothAgentAdaptor::Release()
