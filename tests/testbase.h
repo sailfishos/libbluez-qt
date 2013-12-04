@@ -631,6 +631,7 @@ void BluezTestBase::ManagerMock::mock_reset()
         }
 
         device->input()->mock_setProperty("Connected", QDBusVariant(true));
+        device->audio()->mock_setProperty("State", QDBusVariant("disconnected"));
 
     }
     adapter1->mock_endAddDevice();
