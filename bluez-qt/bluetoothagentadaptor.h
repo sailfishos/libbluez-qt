@@ -31,7 +31,7 @@ public slots:
 	void Authorize(const QDBusObjectPath &device, const QString &uuid);
 	void Cancel();
 	void ConfirmModeChange(const QString &mode);
-	void DisplayPasskey(const QDBusObjectPath &device, uint passkey, uint entered);
+	void DisplayPasskey(const QDBusObjectPath &device, uint passkey);   // 'entered' arg is not actually provided in BlueZ 4.x
 	void Release();
 	void RequestConfirmation(const QDBusObjectPath &device, uint passkey);
 	uint RequestPasskey(const QDBusObjectPath &device);

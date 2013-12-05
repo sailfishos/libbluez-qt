@@ -20,6 +20,7 @@ AsyncAgent::AsyncAgent(QString path, QObject *parent)
     , m_connection(QDBusConnection::systemBus())
     , m_pendingAction(InvalidAction)
     , m_confirmationRequestPasskey(0)
+    , m_displayPasskey(0)
 {
 }
 
@@ -28,6 +29,14 @@ void AsyncAgent::authorize(OrgBluezDeviceInterface &device, QString uuid)
     qDebug() << Q_FUNC_INFO;
     m_pendingAction = AuthorizeAction;
     m_requestAuthorizeUuid = uuid;
+    initializeDelayedReply(QDBusObjectPath(device.path()));
+}
+
+void AsyncAgent::displayPasskey(OrgBluezDeviceInterface &device, uint passkey)
+{
+    qDebug() << Q_FUNC_INFO;
+    m_pendingAction = DisplayPasskeyAction;
+    m_displayPasskey = passkey;
     initializeDelayedReply(QDBusObjectPath(device.path()));
 }
 
@@ -118,6 +127,9 @@ void AsyncAgent::devicePropertiesChanged()
     case RequestPidCodeAction:
         notifyPidCodeRequest();
         break;
+    case DisplayPasskeyAction:
+        notifyPasskeyDisplay();
+        break;
     }
     m_pendingAction = InvalidAction;
 }
@@ -181,4 +193,15 @@ void AsyncAgent::notifyPidCodeRequest()
                               Q_ARG(QString, m_deviceToPair->address()),
                               Q_ARG(uint, uint(m_deviceToPair->classOfDevice())),
                               Q_ARG(QString, m_deviceToPair->alias()));
+}
+
+void AsyncAgent::notifyPasskeyDisplay()
+{
+    QMetaObject::invokeMethod(parent(),
+                              "displayPasskey",
+                              Qt::QueuedConnection,
+                              Q_ARG(QString, m_deviceToPair->address()),
+                              Q_ARG(uint, uint(m_deviceToPair->classOfDevice())),
+                              Q_ARG(QString, m_deviceToPair->alias()),
+                              Q_ARG(uint, m_displayPasskey));
 }
