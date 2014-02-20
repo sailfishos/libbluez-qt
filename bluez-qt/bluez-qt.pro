@@ -10,7 +10,7 @@ system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
 system($$[QT_INSTALL_BINS]/qdbusxml2cpp -p input.h:input.cpp input.xml)
 include(obex/obex.pri)
 
-VERSION+= 0.1.16
+VERSION+= 0.1.17
 
 TEMPLATE = lib
 equals(QT_MAJOR_VERSION, 4): TARGET = bluez-qt
