@@ -13,6 +13,7 @@
 #include "bluedevice.h"
 #include "audio.h"
 #include "headset.h"
+#include "input.h"
 
 #include <QDBusPendingReply>
 #include <QDBusPendingCallWatcher>
@@ -43,6 +44,8 @@ static const QLatin1String AudioPropStateConnected("connected");
 static const QLatin1String AudioPropStateDisconnecting("disconnecting");
 static const QLatin1String AudioPropStateDisconnected("disconnected");
 
+static const QLatin1String PropInputConnected("Connected");
+
 BluetoothDevice::BluetoothDevice(QObject *parent)
     : QObject(parent)
 {
@@ -65,8 +68,11 @@ void BluetoothDevice::init()
     m_device = 0;
     m_audio = 0;
     m_headset = 0;
+    m_input = 0;
     m_audioConnectionState = AudioStateUnknown;
     m_audioPlayingState = false;
+    m_inputConnected = false;
+    m_inputConnectedSet = false;
     if (!m_objectPath.isEmpty()) {
         setPath(m_objectPath);
     }
@@ -105,6 +111,11 @@ void BluetoothDevice::setPath(const QString &objectPath)
         QDBusPendingCallWatcher *getAudioPropsWatcher = new QDBusPendingCallWatcher(getAudioPropsResult, this);
         connect(getAudioPropsWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
                 SLOT(getAudioPropertiesFinished(QDBusPendingCallWatcher*)));
+
+        m_input = new OrgBluezInputInterface("org.bluez", m_objectPath, QDBusConnection::systemBus(), this);
+        connect(m_input, SIGNAL(PropertyChanged(QString,QDBusVariant)),
+                SLOT(inputPropertyChanged(QString,QDBusVariant)));
+        updateInputConnectionState();
     }
 }
 
@@ -116,6 +127,11 @@ BluetoothDevice::AudioConnectionState BluetoothDevice::audioConnectionState() co
 bool BluetoothDevice::audioPlayingState() const
 {
     return m_audioPlayingState;
+}
+
+bool BluetoothDevice::inputConnected() const
+{
+    return m_inputConnected;
 }
 
 QString BluetoothDevice::address() const
@@ -218,6 +234,28 @@ void BluetoothDevice::disconnectAudio()
     if (m_audio) {
         m_audio->Disconnect();
     }
+}
+
+void BluetoothDevice::connectInput()
+{
+    if (!m_input) {
+        return;
+    }
+    QDBusPendingReply<> connectResult = m_input->Connect();
+    QDBusPendingCallWatcher *connectWatcher = new QDBusPendingCallWatcher(connectResult, this);
+    connect(connectWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(inputConnectFinished(QDBusPendingCallWatcher*)));
+}
+
+void BluetoothDevice::disconnectInput()
+{
+    if (!m_input) {
+        return;
+    }
+    QDBusPendingReply<> disconnectResult = m_input->Disconnect();
+    QDBusPendingCallWatcher *disconnectWatcher = new QDBusPendingCallWatcher(disconnectResult, this);
+    connect(disconnectWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(inputDisconnectFinished(QDBusPendingCallWatcher*)));
 }
 
 void BluetoothDevice::disconnect()
@@ -404,4 +442,68 @@ void BluetoothDevice::updateHeadsetProperty(const QString &name, const QVariant 
         m_audioPlayingState = value.toBool();
         emit audioPlayingStateChanged(m_audioPlayingState);
     }
+}
+
+void BluetoothDevice::getInputPropertiesFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<QVariantMap> reply = *call;
+    if (!reply.isError()) {
+        // 'Connected' is the only property there will ever be
+        QVariantMap values = reply.value();
+        if (values.contains(PropInputConnected)) {
+            setInputConnected(values[PropInputConnected].toBool());
+        }
+    }
+    call->deleteLater();
+}
+
+void BluetoothDevice::inputPropertyChanged(const QString &name, const QDBusVariant &value)
+{
+    if (name == PropInputConnected) {
+        setInputConnected(value.variant().toBool());
+    }
+}
+
+void BluetoothDevice::setInputConnected(bool connected)
+{
+    if (m_inputConnected != connected || !m_inputConnectedSet) {
+        m_inputConnected = connected;
+        m_inputConnectedSet = true;
+        emit inputConnectedChanged();
+        emit devicePropertiesChanged();
+    }
+}
+
+void BluetoothDevice::updateInputConnectionState()
+{
+    QDBusPendingReply<QVariantMap> getInputPropsResult = m_input->GetProperties();
+    QDBusPendingCallWatcher *getInputPropsWatcher = new QDBusPendingCallWatcher(getInputPropsResult, this);
+    connect(getInputPropsWatcher, SIGNAL(finished(QDBusPendingCallWatcher*)),
+            SLOT(getInputPropertiesFinished(QDBusPendingCallWatcher*)));
+}
+
+void BluetoothDevice::inputConnectFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError()) {
+        qWarning() << "org.bluez.Input.Connect() failed for" << address() << ":"
+                   << reply.error().name() << reply.error().message();
+        updateInputConnectionState();
+    } else {
+        setInputConnected(true);
+    }
+    call->deleteLater();
+}
+
+void BluetoothDevice::inputDisconnectFinished(QDBusPendingCallWatcher *call)
+{
+    QDBusPendingReply<> reply = *call;
+    if (reply.isError()) {
+        qWarning() << "org.bluez.Input.Disconnect() failed for" << address() << ":"
+                   << reply.error().name() << reply.error().message();
+        updateInputConnectionState();
+    } else {
+        setInputConnected(false);
+    }
+    call->deleteLater();
 }
