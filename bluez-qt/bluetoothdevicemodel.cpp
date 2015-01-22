@@ -174,26 +174,9 @@ void BluetoothDevicesModel::defaultAdapterChanged(QDBusObjectPath path)
 {
 	if(adapter && adapter->path() == path.path()) return;
 
-	if (adapter)
-	{
-		beginRemoveRows(QModelIndex(), 0, m_devices.size()-1);
-		foreach(BluetoothDevice* device, m_devices)
-		{
-			updateConnected(device->connected());
-			device->deleteLater();
-		}
-		m_devices.clear();
-		endRemoveRows();
+	if (adapter) clearModel();
 
-		delete adapter;
-		adapter = NULL;
-		adapterChanged(false);
-	}
-
-	if(path.path() == "")
-	{
-		return;
-	}
+	if(path.path() == "") return;
 
 	adapter = new OrgBluezAdapterInterface(
 			"org.bluez",
@@ -228,21 +211,11 @@ void BluetoothDevicesModel::adapterRemoved(QDBusObjectPath)
 {
 	QDBusObjectPath adapterpath = manager->DefaultAdapter();
 
+	// Not comparing paths because current design seems to follow Bluez
+	// manager's default adapter only. Clear if it's empty.
 	if(adapterpath.path() == "")
 	{
-		beginRemoveRows(QModelIndex(), 0, m_devices.size()-1);
-		foreach(BluetoothDevice* device, m_devices)
-		{
-			updateConnected(device->connected());
-			device->deleteLater();
-		}
-		m_devices.clear();
-		endRemoveRows();
-
-		if(adapter) delete adapter;
-		adapter = NULL;
-		adapterChanged(false);
-		return;
+		clearModel();
 	}
 }
 
@@ -251,7 +224,7 @@ void BluetoothDevicesModel::deviceCreated(QDBusObjectPath devicepath)
 	BluetoothDevice* device = new BluetoothDevice(devicepath,this);
 
 	updateConnected(device->connected());
-    connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
+	connect(device,SIGNAL(propertyChanged(QString,QVariant)),this,SLOT(devicePropertyChanged(QString,QVariant)));
 
 	beginInsertRows(QModelIndex(),m_devices.size(),m_devices.size());
 	m_devices.append(device);
@@ -314,6 +287,8 @@ void BluetoothDevicesModel::adapterPropertyChanged(QString name, QDBusVariant va
 
 void BluetoothDevicesModel::updateConnected(bool deviceconnectedStatus)
 {
+	if(m_connected == deviceconnectedStatus) return;
+
 	if(deviceconnectedStatus)
 	{
 		if(!m_connected)
@@ -336,4 +311,26 @@ void BluetoothDevicesModel::updateConnected(bool deviceconnectedStatus)
 			connectedChanged(m_connected);
 		}
 	}
+}
+
+void BluetoothDevicesModel::clearModel()
+{
+	// Size check avoids an assert if e.g. defaultAdapterChanged signal is
+	// received before any devices were added.
+	if (m_devices.size())
+	{
+		beginRemoveRows(QModelIndex(), 0, m_devices.size()-1);
+		foreach(BluetoothDevice* device, m_devices)
+		{
+			device->deleteLater();
+		}
+		m_devices.clear();
+		endRemoveRows();
+	}
+
+	updateConnected(false);
+
+	delete adapter;
+	adapter = NULL;
+	adapterChanged(false);
 }

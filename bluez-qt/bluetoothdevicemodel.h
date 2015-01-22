@@ -66,6 +66,7 @@ signals:
 
 private:
 	void updateConnected(bool deviceconnectedStatus);
+	void clearModel();
 
 	bool m_connected;
 	OrgBluezManagerInterface *manager;
