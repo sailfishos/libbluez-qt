@@ -1,6 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS += bluez-qt declarative
-equals(QT_MAJOR_VERSION, 5): SUBDIRS += tests
+SUBDIRS += bluez-qt declarative tests
 CONFIG += ordered
 
 # Adds 'coverage' target
