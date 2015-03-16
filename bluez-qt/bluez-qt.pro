@@ -13,8 +13,7 @@ include(obex/obex.pri)
 VERSION+= 0.1.19
 
 TEMPLATE = lib
-equals(QT_MAJOR_VERSION, 4): TARGET = bluez-qt
-equals(QT_MAJOR_VERSION, 5): TARGET = bluez-qt5
+TARGET = bluez-qt5
 QT += dbus
 CONFIG += link_pkgconfig \
 	debug
@@ -58,8 +57,7 @@ SOURCES += bluetoothagentadaptor.cpp \
 	input.cpp
 
 target.path = $$INSTALL_ROOT/usr/lib
-equals(QT_MAJOR_VERSION, 4): headers.path = $$INSTALL_ROOT/usr/include/bluez-qt/
-equals(QT_MAJOR_VERSION, 5): headers.path = $$INSTALL_ROOT/usr/include/bluez-qt5/
+headers.path = $$INSTALL_ROOT/usr/include/bluez-qt5/
 headers.files = $$HEADERS
 INSTALLS += target \
 	headers
@@ -68,8 +66,7 @@ CONFIG += create_pc create_prl
 QMAKE_PKGCONFIG_DESCRIPTION = Bluez Qt Bindings Library
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
 pkgconfig.path = $$INSTALL_ROOT/usr/lib/pkgconfig
-equals(QT_MAJOR_VERSION, 4): pkgconfig.files = bluez-qt.pc
-equals(QT_MAJOR_VERSION, 5): pkgconfig.files = bluez-qt5.pc
+pkgconfig.files = bluez-qt5.pc
 
 INSTALLS += pkgconfig
 
