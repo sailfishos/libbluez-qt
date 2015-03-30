@@ -312,8 +312,8 @@ bool BluetoothDevice::updateProperty(const QString &name, const QVariant &value)
     return propertyHandled;
 }
 
-#define UPDATE_PROPERTY(prop, values) {\
-    if (values.contains(prop) && values[prop] != m_properties[prop]) \
+#define SET_INITIAL_PROPERTY(prop, values) {\
+    if (!m_properties.contains(prop) && values.contains(prop) && values[prop] != m_properties[prop]) \
         updateProperty(prop, values[prop]); \
 } \
 
@@ -324,24 +324,24 @@ void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
     QDBusPendingReply<QVariantMap> reply = *call;
     if (!reply.isError()) {
         QVariantMap values = reply.value();
-        UPDATE_PROPERTY(PropAddress, values);
-        UPDATE_PROPERTY(PropName, values);
-        UPDATE_PROPERTY(PropVendor, values);
-        UPDATE_PROPERTY(PropVendorSource, values);
-        UPDATE_PROPERTY(PropProduct, values);
-        UPDATE_PROPERTY(PropVersion, values);
-        UPDATE_PROPERTY(PropIcon, values);
-        UPDATE_PROPERTY(PropClassOfDevice, values);
-        UPDATE_PROPERTY(PropUuids, values);
-        UPDATE_PROPERTY(PropServices, values);
-        UPDATE_PROPERTY(PropPaired, values);
-        UPDATE_PROPERTY(PropConnected, values);
-        UPDATE_PROPERTY(PropTrusted, values);
-        UPDATE_PROPERTY(PropBlocked, values);
-        UPDATE_PROPERTY(PropAlias, values);
-        UPDATE_PROPERTY(PropNodes, values);
-        UPDATE_PROPERTY(PropAdapter, values);
-        UPDATE_PROPERTY(PropLegacyPairing, values);
+        SET_INITIAL_PROPERTY(PropAddress, values);
+        SET_INITIAL_PROPERTY(PropName, values);
+        SET_INITIAL_PROPERTY(PropVendor, values);
+        SET_INITIAL_PROPERTY(PropVendorSource, values);
+        SET_INITIAL_PROPERTY(PropProduct, values);
+        SET_INITIAL_PROPERTY(PropVersion, values);
+        SET_INITIAL_PROPERTY(PropIcon, values);
+        SET_INITIAL_PROPERTY(PropClassOfDevice, values);
+        SET_INITIAL_PROPERTY(PropUuids, values);
+        SET_INITIAL_PROPERTY(PropServices, values);
+        SET_INITIAL_PROPERTY(PropPaired, values);
+        SET_INITIAL_PROPERTY(PropConnected, values);
+        SET_INITIAL_PROPERTY(PropTrusted, values);
+        SET_INITIAL_PROPERTY(PropBlocked, values);
+        SET_INITIAL_PROPERTY(PropAlias, values);
+        SET_INITIAL_PROPERTY(PropNodes, values);
+        SET_INITIAL_PROPERTY(PropAdapter, values);
+        SET_INITIAL_PROPERTY(PropLegacyPairing, values);
     }
     call->deleteLater();
 
@@ -380,10 +380,13 @@ void BluetoothDevice::getAudioPropertiesFinished(QDBusPendingCallWatcher *call)
     bool wasReady = ready();
 
     QDBusPendingReply<QVariantMap> reply = *call;
-    if (!reply.isError()) {
+
+    // we only care about the audio connection state property, and only set it here if
+    // it hasn't already been set through a property change
+    if (!reply.isError() && m_audioConnectionState == AudioStateUnknown) {
         QVariantMap values = reply.value();
-        Q_FOREACH(const QString &key, values.keys()) {
-            updateAudioProperty(key, values[key]);
+        if (values.contains(AudioPropState)) {
+            updateAudioProperty(AudioPropState, values[AudioPropState]);
         }
     }
     call->deleteLater();
@@ -447,8 +450,10 @@ void BluetoothDevice::updateHeadsetProperty(const QString &name, const QVariant 
 void BluetoothDevice::getInputPropertiesFinished(QDBusPendingCallWatcher *call)
 {
     QDBusPendingReply<QVariantMap> reply = *call;
-    if (!reply.isError()) {
-        // 'Connected' is the only property there will ever be
+
+    // 'Connected' is the only property there will ever be, and only set it here if
+    // it hasn't already been set through a property change
+    if (!reply.isError() && !m_inputConnectedSet) {
         QVariantMap values = reply.value();
         if (values.contains(PropInputConnected)) {
             setInputConnected(values[PropInputConnected].toBool());
