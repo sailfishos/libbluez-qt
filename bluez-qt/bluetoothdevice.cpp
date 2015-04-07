@@ -493,7 +493,7 @@ void BluetoothDevice::inputConnectFinished(QDBusPendingCallWatcher *call)
     if (reply.isError()) {
         qWarning() << "org.bluez.Input.Connect() failed for" << address() << ":"
                    << reply.error().name() << reply.error().message();
-        updateInputConnectionState();
+        connectInputError(reply.error().name(), reply.error().message());
     } else {
         setInputConnected(true);
     }
@@ -506,7 +506,7 @@ void BluetoothDevice::inputDisconnectFinished(QDBusPendingCallWatcher *call)
     if (reply.isError()) {
         qWarning() << "org.bluez.Input.Disconnect() failed for" << address() << ":"
                    << reply.error().name() << reply.error().message();
-        updateInputConnectionState();
+        disconnectInputError(reply.error().name(), reply.error().message());
     } else {
         setInputConnected(false);
     }

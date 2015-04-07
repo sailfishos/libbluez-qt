@@ -107,6 +107,9 @@ signals:
     void aliasChanged();
     void legacyPairingChanged();
 
+    void connectInputError(const QString &error, const QString &errorMessage);
+    void disconnectInputError(const QString &error, const QString &errorMessage);
+
 private slots:
     void getPropertiesFinished(QDBusPendingCallWatcher *call);
     void propertyChanged(QString name, QDBusVariant value);
