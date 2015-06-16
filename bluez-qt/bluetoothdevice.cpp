@@ -73,6 +73,7 @@ void BluetoothDevice::init()
     m_audioPlayingState = false;
     m_inputConnected = false;
     m_inputConnectedSet = false;
+    m_ready = false;
     if (!m_objectPath.isEmpty()) {
         setPath(m_objectPath);
     }
@@ -80,7 +81,7 @@ void BluetoothDevice::init()
 
 bool BluetoothDevice::ready() const
 {
-    return !m_properties.isEmpty() && m_audioConnectionState != AudioStateUnknown;
+    return m_ready;
 }
 
 QString BluetoothDevice::path() const
@@ -319,8 +320,6 @@ bool BluetoothDevice::updateProperty(const QString &name, const QVariant &value)
 
 void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
 {
-    bool wasReady = ready();
-
     QDBusPendingReply<QVariantMap> reply = *call;
     if (!reply.isError()) {
         QVariantMap values = reply.value();
@@ -346,10 +345,7 @@ void BluetoothDevice::getPropertiesFinished(QDBusPendingCallWatcher *call)
     call->deleteLater();
 
     emit devicePropertiesChanged();
-
-    if (wasReady != ready()) {
-        emit readyChanged();
-    }
+    setReady();
 
     // If class of device is major type of audio device, then follow
     // device state changes.
@@ -377,8 +373,6 @@ void BluetoothDevice::propertyChanged(QString name, QDBusVariant value)
 
 void BluetoothDevice::getAudioPropertiesFinished(QDBusPendingCallWatcher *call)
 {
-    bool wasReady = ready();
-
     QDBusPendingReply<QVariantMap> reply = *call;
 
     // we only care about the audio connection state property, and only set it here if
@@ -390,10 +384,7 @@ void BluetoothDevice::getAudioPropertiesFinished(QDBusPendingCallWatcher *call)
         }
     }
     call->deleteLater();
-
-    if (wasReady != ready()) {
-        emit readyChanged();
-    }
+    setReady();
 }
 
 void BluetoothDevice::audioPropertyChanged(QString name, QDBusVariant value)
@@ -512,3 +503,12 @@ void BluetoothDevice::inputDisconnectFinished(QDBusPendingCallWatcher *call)
     }
     call->deleteLater();
 }
+
+void BluetoothDevice::setReady()
+{
+    if (!m_ready && !m_properties.isEmpty() && m_audioConnectionState != AudioStateUnknown) {
+        m_ready = true;
+        emit readyChanged();
+    }
+}
+
