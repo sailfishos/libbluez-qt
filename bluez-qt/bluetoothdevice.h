@@ -129,6 +129,7 @@ private:
     void updateHeadsetProperty(const QString &name, const QVariant &value);
     void updateInputConnectionState();
     void setInputConnected(bool connected);
+    void setReady();
 
     OrgBluezDeviceInterface *m_device;
     OrgBluezAudioInterface *m_audio;
@@ -140,6 +141,7 @@ private:
     bool m_audioPlayingState;
     bool m_inputConnected;
     bool m_inputConnectedSet;
+    bool m_ready;
 };
 
 Q_DECLARE_METATYPE(BluetoothDevice::AudioConnectionState)

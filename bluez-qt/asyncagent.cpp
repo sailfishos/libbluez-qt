@@ -67,18 +67,15 @@ QString AsyncAgent::requestPidCode(OrgBluezDeviceInterface &device)
 void AsyncAgent::release()
 {
     qDebug() << Q_FUNC_INFO;
-    if (!QMetaObject::invokeMethod(parent(), "release", Qt::QueuedConnection))
-        qDebug("sending relay signal failed!!!");
+    QMetaObject::invokeMethod(parent(), "release", Qt::QueuedConnection);
 }
 
 void AsyncAgent::replyRequestConfirmation(bool confirmed)
 {
     if (!confirmed) {
-        qDebug("rejecting");
         QDBusMessage reply = m_pendingMessage.createErrorReply("org.bluez.Error.Rejected", "The request was rejected");
         m_connection.send(reply);
     } else {
-        qDebug("accepting");
         QDBusMessage reply = m_pendingMessage.createReply();
         m_connection.send(reply);
     }
@@ -139,6 +136,8 @@ void AsyncAgent::initializeDelayedReply(const QDBusObjectPath &path)
     setDelayedReply(true);
     m_pendingMessage = message();
     m_connection = connection();
+
+    delete m_deviceToPair;
     m_deviceToPair = new BluetoothDevice(path, this);
     QObject::connect(m_deviceToPair, SIGNAL(devicePropertiesChanged()), this, SLOT(devicePropertiesChanged()));
 }
