@@ -10,7 +10,7 @@ system($$[QT_HOST_BINS]/qdbusxml2cpp -p headset.h:headset.cpp headset.xml)
 system($$[QT_HOST_BINS]/qdbusxml2cpp -p input.h:input.cpp input.xml)
 include(obex/obex.pri)
 
-VERSION+= 0.1.19
+VERSION+= 0.1.26
 
 isEmpty(PREFIX) {
   PREFIX=/usr
