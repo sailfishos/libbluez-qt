@@ -1,6 +1,6 @@
 Name:       libbluez-qt5
 Summary:    Library for accessing bluetooth functionality in Qt
-Version:    0.1.19
+Version:    0.1.26
 Release:    1
 Group:      System/GUI/Other
 License:    ASL 2.0
