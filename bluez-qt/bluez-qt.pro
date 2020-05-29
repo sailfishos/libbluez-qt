@@ -28,7 +28,7 @@ OTHER_FILES += \
 	audiosink.xml \
 	adapter.xml \
 	headset.xml \
-    input.xml
+	input.xml
 HEADERS += bluetoothagentadaptor.h \
 	bluemanager.h \
 	bluedevice.h \
@@ -41,7 +41,7 @@ HEADERS += bluetoothagentadaptor.h \
 	bluetoothbaseagent.h \
 	asyncagent.h \
 	devicetypes.h \
-    bluetoothdevice.h \
+	bluetoothdevice.h \
 	bluetoothdevicemodel.h \
 	audio.h \
 	input.h
@@ -60,8 +60,8 @@ SOURCES += bluetoothagentadaptor.cpp \
 	audio.cpp \
 	input.cpp
 
-target.path = $$INSTALL_ROOT$$PREFIX/lib
-headers.path = $$INSTALL_ROOT$$PREFIX/include/bluez-qt5/
+target.path = $$[QT_INSTALL_LIBS]
+headers.path = $$PREFIX/include/bluez-qt5/
 headers.files = $$HEADERS
 INSTALLS += target \
 	headers
@@ -69,7 +69,7 @@ INSTALLS += target \
 CONFIG += create_pc create_prl
 QMAKE_PKGCONFIG_DESCRIPTION = Bluez Qt Bindings Library
 QMAKE_PKGCONFIG_INCDIR = $$headers.path
-pkgconfig.path = $$INSTALL_ROOT$$PREFIX/lib/pkgconfig
+pkgconfig.path = $$[QT_INSTALL_LIBS]/pkgconfig
 pkgconfig.files = bluez-qt5.pc
 
 INSTALLS += pkgconfig

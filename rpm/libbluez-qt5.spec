@@ -2,9 +2,8 @@ Name:       libbluez-qt5
 Summary:    Library for accessing bluetooth functionality in Qt
 Version:    0.1.26
 Release:    1
-Group:      System/GUI/Other
 License:    ASL 2.0
-URL:        https://github.com/nemomobile/libbluez-qt
+URL:        https://git.sailfishos.org/mer-core/libbluez-qt
 Source0:    libbluez-qt5-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -22,7 +21,6 @@ This is a library for accessing bluetooth through bluez functionality in Qt.
 
 %package devel
 Summary:    Development files for bluez-qt
-Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
 
 %description devel
@@ -32,7 +30,6 @@ applications using qt to access bluetooth devices using bluez
 
 %package tests
 Summary:    Test suite for libbluez-qt5
-Group:      System/GUI/Other
 Requires:   %{name} = %{version}-%{release}
 
 %description tests
@@ -42,7 +39,7 @@ Requires:   %{name} = %{version}-%{release}
 %setup -q -n %{name}-%{version}
 
 %build
-%qmake5 
+%qmake5
 
 make %{?jobs:-j%jobs}
 
