@@ -1,6 +1,6 @@
 Name:       libbluez-qt5
 Summary:    Library for accessing bluetooth functionality in Qt
-Version:    0.1.26
+Version:    0.1.27
 Release:    1
 License:    ASL 2.0
 URL:        https://git.sailfishos.org/mer-core/libbluez-qt
