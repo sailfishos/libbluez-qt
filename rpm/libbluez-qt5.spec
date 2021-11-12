@@ -41,7 +41,7 @@ Requires:   %{name} = %{version}-%{release}
 %build
 %qmake5
 
-make %{?jobs:-j%jobs}
+%make_build
 
 %install
 rm -rf %{buildroot}
@@ -53,6 +53,7 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{_libdir}/libbluez-qt5.so.*
 %{_libdir}/qt5/qml/Bluetooth/*
 
